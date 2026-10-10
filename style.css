@@ -1,0 +1,737 @@
+/* =========================================================
+   CR-LMIS — style.css
+   Phase 3 shared stylesheet (CSS3 + Bootstrap 5 custom theme)
+   Covers: variables/base | sidebar | topbar | page head |
+   cards/KPI | charts | cattle grid | status cards | auth |
+   tables | forms | modals | toasts | badges | pagination |
+   loading/empty states | footer
+   ========================================================= */
+
+/* ---------- 1. THEME VARIABLES ---------- */
+:root{
+  /* Brand palette */
+  --primary:#1c84c6;
+  --primary-dark:#146a9f;
+  --sidebar-bg:#2b2f3a;
+  --sidebar-brand:#22252e;
+  --sidebar-link:#aeb2bd;
+  --sidebar-hover:#31363f;
+  --sidebar-active:#363b48;
+  --green:#1ab394;
+  --red:#ed5565;
+  --blue:#1c84c6;
+  --cyan:#23c6c8;
+  --orange:#f8ac59;
+  --body-bg:#f3f4f7;
+  --text:#676a6c;
+  --text-dark:#4a4d52;
+  --text-muted:#9aa0a8;
+  --line:#eef0f2;
+  --border:#d9dce1;
+  --white:#fff;
+  --shadow:0 1px 3px rgba(0,0,0,.07);
+}
+
+/* ---------- 2. BASE ---------- */
+*{font-family:'Open Sans',Helvetica,Arial,sans-serif;}
+body{
+  background:var(--body-bg);
+  font-size:13px;
+  color:var(--text);
+  overflow-x:hidden;
+}
+a{color:var(--blue);}
+a:hover{color:var(--primary-dark);}
+
+/* Visible focus state (WCAG) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+.form-check-input:focus-visible{
+  outline:3px solid rgba(28,132,198,.45);
+  outline-offset:2px;
+}
+
+/* ---------- 3. SIDEBAR ---------- */
+.sidebar{
+  position:fixed;top:0;left:0;width:260px;height:100vh;
+  background:var(--sidebar-bg);z-index:1050;
+  transition:transform .25s ease;
+  display:flex;flex-direction:column;
+}
+.sidebar .brand{
+  height:60px;background:var(--sidebar-brand);color:#fff;
+  display:flex;align-items:center;padding:0 20px;
+  font-size:18px;font-weight:700;letter-spacing:.3px;
+}
+.sidebar .brand i{color:#fff;margin-right:10px;font-size:20px;}
+
+.side-search{padding:14px 15px;border-bottom:1px solid rgba(255,255,255,.06);}
+.side-search .input-group{background:#23262f;border-radius:4px;}
+.side-search input{
+  background:transparent;border:none;color:#cfd2d8;
+  font-size:12px;box-shadow:none!important;padding:8px 12px;
+}
+.side-search input::placeholder{color:#7c8089;}
+.side-search input:focus{background:transparent;color:#cfd2d8;}
+.side-search .input-group-text{
+  background:transparent;border:none;color:#7c8089;padding:8px 12px;
+}
+
+.side-nav-label{
+  padding:18px 20px 8px;font-size:10px;font-weight:600;
+  color:#6a6f7b;letter-spacing:1px;text-transform:uppercase;
+}
+.side-nav{flex:1;overflow-y:auto;padding-bottom:20px;}
+.side-nav::-webkit-scrollbar{width:5px;}
+.side-nav::-webkit-scrollbar-thumb{background:#454a58;border-radius:3px;}
+.side-nav a{
+  display:flex;align-items:center;color:var(--sidebar-link);
+  padding:11px 20px;text-decoration:none;font-size:13px;
+  border-left:3px solid transparent;transition:background .15s;
+}
+.side-nav a i{width:22px;margin-right:10px;font-size:14px;text-align:center;}
+.side-nav a:hover{background:var(--sidebar-hover);color:#fff;}
+.side-nav a.active{
+  background:var(--sidebar-active);color:#fff;border-left-color:var(--blue);
+}
+.side-nav a .chev{margin-left:auto;font-size:11px;color:#6a6f7b;}
+
+.sidebar-backdrop{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.4);z-index:1045;
+}
+.sidebar-backdrop.show{display:block;}
+
+/* ---------- 4. MAIN LAYOUT ---------- */
+.main{
+  margin-left:260px;min-height:100vh;
+  display:flex;flex-direction:column;
+  transition:margin .25s ease;
+}
+
+/* ---------- 5. TOPBAR ---------- */
+.topbar{
+  height:60px;background:#fff;display:flex;align-items:center;
+  padding:0 20px;box-shadow:0 1px 3px rgba(0,0,0,.06);
+  position:sticky;top:0;z-index:1040;
+}
+.topbar .burger{
+  background:none;border:none;color:var(--text);
+  font-size:17px;padding:6px 10px;
+}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:18px;}
+.topbar .right .tool{color:#8a8f99;font-size:15px;text-decoration:none;}
+.topbar .right .tool:hover{color:var(--blue);}
+.topbar .user{
+  display:flex;align-items:center;gap:8px;
+  text-decoration:none;color:var(--text);font-weight:600;
+}
+.topbar .user:hover{color:var(--text-dark);}
+.topbar .avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:#e8eaee;color:#8a8f99;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+
+/* ---------- 6. PAGE HEAD + BREADCRUMB ---------- */
+.page-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:16px 22px 10px;flex-wrap:wrap;gap:8px;
+}
+.page-head h1{font-size:24px;font-weight:600;color:var(--text-dark);margin:0;}
+.page-head .breadcrumb{
+  font-size:12px;color:#8a8f99;margin:0;
+}
+.page-head .breadcrumb i{margin-right:4px;}
+
+.content{padding:6px 22px 20px;flex:1;}
+
+/* ---------- 7. GENERIC CARDS ---------- */
+.card-box{
+  background:#fff;border-radius:3px;
+  box-shadow:var(--shadow);margin-bottom:22px;
+}
+.card-box .card-head{
+  display:flex;align-items:center;
+  padding:14px 16px;border-bottom:1px solid var(--line);
+}
+.card-box .card-head h5{font-size:14px;font-weight:600;color:var(--text-dark);margin:0;}
+.card-box .card-head .tools{margin-left:auto;color:#c2c6cc;font-size:12px;}
+.card-box .card-head .tools span{margin-left:12px;cursor:pointer;}
+.card-box.border-top-green{border-top:2px solid var(--green);}
+.card-box.border-top-red{border-top:2px solid var(--red);}
+.card-box.border-top-blue{border-top:2px solid var(--blue);}
+.card-box.border-top-orange{border-top:2px solid var(--orange);}
+
+/* ---------- 8. KPI CARDS ---------- */
+.kpi-card{
+  background:#fff;border-radius:3px;box-shadow:var(--shadow);
+  display:flex;align-items:stretch;overflow:hidden;margin-bottom:22px;
+}
+.kpi-card .kpi-icon{
+  width:78px;min-height:78px;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:26px;flex-shrink:0;
+}
+.kpi-card .kpi-body{
+  padding:14px 16px;display:flex;flex-direction:column;justify-content:center;
+}
+.kpi-card .kpi-label{
+  font-size:11px;font-weight:600;color:var(--text-muted);
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.kpi-card .kpi-value{
+  font-size:20px;font-weight:700;color:var(--text-dark);line-height:1.3;
+}
+
+/* ---------- 9. CHARTS ---------- */
+.chart-wrap{padding:16px;position:relative;height:300px;}
+
+/* ---------- 10. LATEST CATTLE GRID ---------- */
+.cattle-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:16px;}
+.cattle-item{text-align:center;}
+.cattle-item .thumb{
+  background:linear-gradient(145deg,#e9ecef,#d6dae0);border-radius:2px;
+  aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
+  color:#a7adb6;font-size:34px;overflow:hidden;
+}
+.cattle-item .tag{font-weight:700;color:var(--text-dark);margin-top:8px;font-size:13px;}
+.cattle-item .date{font-size:11px;color:var(--text-muted);}
+.view-all{
+  display:block;text-align:center;padding:12px;
+  color:var(--blue);font-weight:600;text-decoration:none;
+}
+.view-all:hover{color:var(--primary-dark);}
+
+/* ---------- 11. STATUS CARDS ---------- */
+.status-card{
+  border-radius:3px;color:#fff;display:flex;align-items:stretch;
+  overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.12);margin-bottom:22px;
+}
+.status-card .st-icon{
+  width:74px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;background:rgba(0,0,0,.14);flex-shrink:0;
+}
+.status-card .st-body{padding:14px 16px;flex:1;}
+.status-card .st-title{
+  font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+}
+.status-card .st-value{font-size:22px;font-weight:700;line-height:1.2;}
+.status-card .st-sub{font-size:12px;opacity:.9;}
+.st-red{background:var(--red);}
+.st-blue{background:var(--blue);}
+.st-green{background:var(--green);}
+.st-orange{background:var(--orange);}
+.st-cyan{background:var(--cyan);}
+
+/* ---------- 12. AUTH PAGES (login / forgot-password) ---------- */
+.auth-body{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#2b2f3a 0%,#20232b 55%,#1a1d24 100%);
+  padding:20px;margin:0;
+}
+.auth-card{
+  width:100%;max-width:420px;background:#fff;
+  border-radius:8px;box-shadow:0 10px 35px rgba(0,0,0,.35);
+  overflow:hidden;
+}
+.auth-brand{
+  background:var(--sidebar-brand);color:#fff;border-radius:0;
+  padding:24px;text-align:center;border-bottom:3px solid var(--blue);
+}
+.auth-brand .logo{
+  width:52px;height:52px;margin:0 auto 10px;border-radius:50%;
+  background:var(--blue);display:flex;align-items:center;justify-content:center;
+  font-size:24px;color:#fff;
+}
+.auth-brand h1{font-size:20px;font-weight:700;margin:0;letter-spacing:.3px;}
+.auth-brand p{font-size:12px;color:var(--sidebar-link);margin:4px 0 0;}
+.auth-body-wrap{padding:28px 30px 22px;}
+.auth-foot{
+  background:#f8f9fb;border-top:1px solid var(--line);
+  padding:12px 30px;display:flex;justify-content:space-between;
+  font-size:12px;color:var(--text);
+}
+.auth-foot a{color:var(--blue);text-decoration:none;font-weight:600;}
+.auth-foot a:hover{text-decoration:underline;}
+.auth-copy{text-align:center;color:#8a8f99;font-size:11.5px;margin-top:18px;}
+
+/* Overview / forgot-password box */
+.overview-box{
+  background:#f4f8fb;border:1px dashed var(--blue);border-radius:4px;
+  padding:10px 12px;font-size:12px;color:#3d4c5a;margin-top:16px;
+}
+.overview-box strong{color:var(--blue);font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+.overview-box code{
+  background:#fff;border:1px solid var(--border);
+  border-radius:3px;padding:0 5px;font-size:11px;
+}
+
+/* ---------- 13. FORMS ---------- */
+.form-label{font-size:12px;font-weight:600;color:var(--text-dark);}
+.input-group-text{
+  background:#f4f5f7;border:1px solid var(--border);color:#8a8f99;
+  border-right:0;padding:10px 12px;
+}
+.form-control{
+  border:1px solid var(--border);border-left:0;
+  font-size:13px;padding:10px 12px;color:var(--text-dark);
+}
+.form-control:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 .15rem rgba(28,132,198,.15);
+}
+.btn-primary-solid{
+  background:var(--blue);border:none;color:#fff;font-weight:700;font-size:14px;
+  padding:11px;width:100%;border-radius:4px;transition:background .15s;
+}
+.btn-primary-solid:hover{background:var(--primary-dark);color:#fff;}
+.btn-outline-toggle{
+  border:1px solid var(--border);border-left:0;color:#8a8f99;background:#fff;
+}
+.btn-outline-toggle:hover{background:#f4f5f7;color:var(--text-dark);}
+
+/* Buttons (general) */
+.btn-crlmis{background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:600;}
+.btn-crlmis:hover{background:var(--primary-dark);color:#fff;}
+.btn-crlmis-outline{border:1px solid var(--blue);color:var(--blue);background:#fff;font-size:13px;font-weight:600;}
+.btn-crlmis-outline:hover{background:var(--blue);color:#fff;}
+
+/* ---------- 14. TABLES ---------- */
+.table-crlmis{font-size:13px;margin-bottom:0;}
+.table-crlmis thead th{
+  background:#f8f9fb;color:var(--text-dark);font-size:11px;
+  text-transform:uppercase;letter-spacing:.4px;
+  border-bottom:2px solid var(--line);padding:11px 14px;white-space:nowrap;
+}
+.table-crlmis tbody td{
+  border-bottom:1px solid var(--line);padding:11px 14px;vertical-align:middle;
+}
+.table-crlmis tbody tr:hover{background:#fafbfc;}
+.table-crlmis .actions a{color:#8a8f99;margin-right:8px;font-size:13px;}
+.table-crlmis .actions a:hover{color:var(--blue);}
+
+/* ---------- 15. STATUS BADGES ---------- */
+.badge-status{font-size:11px;font-weight:600;padding:4px 10px;border-radius:12px;}
+.badge-green{background:rgba(26,179,148,.14);color:#128d74;}
+.badge-red{background:rgba(237,86,101,.14);color:#d63a4b;}
+.badge-blue{background:rgba(28,132,198,.14);color:#146a9f;}
+.badge-orange{background:rgba(248,172,89,.16);color:#d08a2f;}
+
+/* ---------- 16. PAGINATION ---------- */
+.pagination-crlmis{margin-top:14px;}
+.pagination-crlmis .page-link{
+  border:1px solid var(--border);color:var(--text);font-size:12px;
+  padding:5px 12px;border-radius:3px;margin:0 2px;
+}
+.pagination-crlmis .page-link:hover{color:var(--blue);background:#f8f9fb;}
+.pagination-crlmis .page-item.active .page-link{
+  background:var(--blue);border-color:var(--blue);color:#fff;
+}
+
+/* ---------- 17. MODAL DIALOGS ---------- */
+.modal-content{
+  border:none;border-radius:3px;box-shadow:0 10px 35px rgba(0,0,0,.25);
+}
+.modal-header{
+  background:#f8f9fb;border-bottom:1px solid var(--line);
+  padding:14px 18px;
+}
+.modal-header .modal-title{font-size:15px;font-weight:700;color:var(--text-dark);}
+.modal-footer{border-top:1px solid var(--line);padding:12px 18px;}
+.modal-body{padding:18px;}
+
+/* ---------- 18. TOASTS ---------- */
+.crlmis-toast{
+  background:#fff;border:none;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.18);
+  border-left:4px solid var(--blue);font-size:13px;
+}
+.crlmis-toast.toast-success{border-left-color:var(--green);}
+.crlmis-toast.toast-error{border-left-color:var(--red);}
+.crlmis-toast.toast-warning{border-left-color:var(--orange);}
+.crlmis-toast .toast-header{
+  background:#fff;border-bottom:1px solid var(--line);font-weight:700;color:var(--text-dark);
+}
+
+/* ---------- 19. LOADING / EMPTY STATES ---------- */
+.loading-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:50px 20px;color:var(--text-muted);font-size:13px;gap:10px;
+}
+.loading-state .spinner-border{width:26px;height:26px;border-width:3px;color:var(--blue);}
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:50px 20px;color:var(--text-muted);text-align:center;
+}
+.empty-state i{font-size:36px;margin-bottom:10px;color:#c2c6cc;}
+.empty-state p{margin:0 0 4px;font-size:13px;}
+.empty-state .empty-hint{font-size:12px;color:#b3b8c0;}
+
+/* ---------- 20. SKELETON PLACEHOLDER ---------- */
+.skeleton{
+  background:linear-gradient(90deg,#eef0f2 25%,#f7f8fa 50%,#eef0f2 75%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:3px;
+}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* ---------- 21. FILTER BAR ---------- */
+.filter-bar{
+  background:#fff;border:1px solid var(--line);border-radius:3px;
+  padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow);
+}
+.filter-bar .form-control,.filter-bar .form-select{
+  border:1px solid var(--border);border-radius:3px;font-size:12.5px;
+}
+.filter-bar .form-select:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 .15rem rgba(28,132,198,.15);
+}
+
+/* ---------- 22. ALERTS ---------- */
+.alert{font-size:12.5px;border-radius:4px;}
+
+/* ---------- 23. FOOTER ---------- */
+.app-footer{
+  background:#fff;border-top:1px solid #e7e9ec;padding:12px 22px;
+  display:flex;justify-content:space-between;font-size:12px;color:#8a8f99;
+}
+</style>
+</head>
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><i class="fa-solid fa-cow"></i> AdminCM</div>
+
+  <div class="side-search">
+    <div class="input-group">
+      <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" class="form-control" placeholder="Search..." aria-label="Search">
+    </div>
+  </div>
+
+  <div class="side-nav-label">Main Navigation</div>
+
+  <nav class="side-nav">
+    <a href="#" class="active"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+    <a href="#"><i class="fa-solid fa-cow"></i> Cattle</a>
+    <a href="#"><i class="fa-solid fa-table-cells-large"></i> Cattle Types</a>
+    <a href="#"><i class="fa-solid fa-briefcase-medical"></i> Medicines</a>
+    <a href="#"><i class="fa-solid fa-dna"></i> Breeds</a>
+    <a href="#"><i class="fa-solid fa-flask"></i> Milks</a>
+    <a href="#"><i class="fa-solid fa-book"></i> Ledgers</a>
+    <a href="#"><i class="fa-solid fa-tag"></i> Tags</a>
+    <a href="#"><i class="fa-solid fa-users"></i> Employees <i class="fa-solid fa-chevron-right chev"></i></a>
+    <a href="#"><i class="fa-solid fa-boxes-stacked"></i> Inventory Management <i class="fa-solid fa-chevron-right chev"></i></a>
+    <a href="#"><i class="fa-solid fa-user-shield"></i> Admin Privilege <i class="fa-solid fa-chevron-right chev"></i></a>
+    <a href="#"><i class="fa-solid fa-globe"></i> Countries</a>
+    <a href="#"><i class="fa-solid fa-gear"></i> Settings</a>
+  </nav>
+</aside>
+<div class="sidebar-backdrop" id="backdrop"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="burger" id="burger" aria-label="Toggle navigation">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="right">
+      <a href="#" class="tool" aria-label="Sync"><i class="fa-solid fa-repeat"></i></a>
+      <a href="#" class="user">
+        <span class="avatar"><i class="fa-solid fa-user"></i></span>
+        Admin <i class="fa-solid fa-angle-down" style="font-size:11px;color:#9aa0a8;"></i>
+      </a>
+    </div>
+  </header>
+
+  <!-- Page header + breadcrumb -->
+  <div class="page-head">
+    <h1>Dashboard</h1>
+    <nav class="breadcrumb"><i class="fa-solid fa-house"></i> Home &nbsp;/&nbsp; Dashboard</nav>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== KPI ROW ===== -->
+    <div class="row">
+      <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--cyan);"><i class="fa-solid fa-paw"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Total Cattle</div>
+            <div class="kpi-value" id="kpi-cattle">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--green);"><i class="fa-solid fa-dollar-sign"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Total Income</div>
+            <div class="kpi-value" id="kpi-income">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--red);"><i class="fa-solid fa-money-bill-1"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Total Expense</div>
+            <div class="kpi-value" id="kpi-expense">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--orange);"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Total Inventories</div>
+            <div class="kpi-value" id="kpi-inventories">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CHARTS ROW ===== -->
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card-box border-top-green">
+          <div class="card-head">
+            <h5>Monthly Income/Expense Report</h5>
+            <div class="tools"><span title="Collapse">&minus;</span><span title="Close">&times;</span></div>
+          </div>
+          <div class="chart-wrap"><canvas id="incomeExpenseChart"></canvas></div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card-box">
+          <div class="card-head">
+            <h5>Cattle by Types</h5>
+            <div class="tools"><span title="Collapse">&minus;</span><span title="Close">&times;</span></div>
+          </div>
+          <div class="chart-wrap"><canvas id="cattleTypesChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LATEST CATTLE + STATUS CARDS ===== -->
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card-box border-top-red">
+          <div class="card-head">
+            <h5>Latest Cattle</h5>
+            <div class="tools"><span title="Collapse">&minus;</span><span title="Close">&times;</span></div>
+          </div>
+          <div class="cattle-grid" id="cattleGrid"><!-- populated by JS (demo data) --></div>
+          <a href="#" class="view-all">View All Cattle</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="status-card st-red">
+          <div class="st-icon"><i class="fa-solid fa-truck-medical"></i></div>
+          <div class="st-body">
+            <div class="st-title">Total Sick Cattle</div>
+            <div class="st-value" id="st-sick">0</div>
+            <div class="st-sub">Similar in 30 Days</div>
+          </div>
+        </div>
+
+        <div class="status-card st-blue">
+          <div class="st-icon"><i class="fa-solid fa-droplet"></i></div>
+          <div class="st-body">
+            <div class="st-title">Total Milk Giving Cattle</div>
+            <div class="st-value" id="st-milking">0</div>
+            <div class="st-sub">Similar in 30 Days</div>
+          </div>
+        </div>
+
+        <div class="status-card st-green">
+          <div class="st-icon"><i class="fa-solid fa-square-plus"></i></div>
+          <div class="st-body">
+            <div class="st-title">Total Expected Birth Cattle</div>
+            <div class="st-value" id="st-birth">0</div>
+            <div class="st-sub">Similar in 30 Days</div>
+          </div>
+        </div>
+
+        <div class="status-card st-orange">
+          <div class="st-icon"><i class="fa-solid fa-droplet"></i></div>
+          <div class="st-body">
+            <div class="st-title">Total Amount of Milks</div>
+            <div class="st-value" id="st-milk">0</div>
+            <div class="st-sub">Similar in 30 Days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <span>Copyright © 2019 Bogra Livestock. All rights reserved.</span>
+    <span>Version 1.0</span>
+  </footer>
+
+</div><!-- /main -->
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+/* =========================================================
+   DEMO DATA OBJECT
+   In the full-stack build (per the master prompt), these
+   values are NOT hard-coded: this object is replaced by the
+   response from GET /api/dashboard/summary and
+   GET /api/dashboard/livestock. All figures below match the
+   approved dashboard design screenshot and are DEMO/SEED
+   values only — they must not be presented as real
+   government statistics.
+   ========================================================= */
+const DEMO_DATA = {
+  summary: {
+    totalCattle: 172,
+    totalIncome: "26,34,774",
+    totalExpense: "1,05,93,851",
+    totalInventories: 11,
+    sickCattle: 0,
+    milkGivingCattle: 0,
+    expectedBirthCattle: 0,
+    totalMilk: 0
+  },
+  monthlyReport: {
+    labels: ["March", "March", "April", "May", "June", "July"],
+    income:  [0.55, 0.45, 0.60, 0.50, 0.65, 0.55],
+    expense: [0.40, 0.35, 0.45, 0.38, 0.50, 0.42]
+  },
+  cattleByTypes: [
+    { label: "OX (66)",           value: 66, color: "#ed5565" },
+    { label: "Cow (31)",          value: 31, color: "#1ab394" },
+    { label: "Heifer (23)",       value: 23, color: "#f8ac59" },
+    { label: "Male Calf (17)",    value: 17, color: "#1c84c6" },
+    { label: "Female Calf (0)",   value: 0,  color: "#23c6c8" },
+    { label: "ShibhanType (0)",   value: 0,  color: "#80c3f7" }
+  ],
+  latestCattle: [
+    { tag: "156", date: "Mar 13, 2020" },
+    { tag: "40",  date: "Mar 09, 2020" },
+    { tag: "43",  date: "Mar 09, 2020" },
+    { tag: "45",  date: "Mar 09, 2020" },
+    { tag: "48",  date: "Mar 09, 2020" },
+    { tag: "19",  date: "Mar 09, 2020" },
+    { tag: "20",  date: "Mar 09, 2020" },
+    { tag: "23",  date: "Mar 09, 2020" }
+  ]
+};
+
+/* ---------- Populate KPI + status values ---------- */
+document.getElementById("kpi-cattle").textContent      = DEMO_DATA.summary.totalCattle;
+document.getElementById("kpi-income").textContent      = DEMO_DATA.summary.totalIncome;
+document.getElementById("kpi-expense").textContent     = DEMO_DATA.summary.totalExpense;
+document.getElementById("kpi-inventories").textContent = DEMO_DATA.summary.totalInventories;
+document.getElementById("st-sick").textContent         = DEMO_DATA.summary.sickCattle;
+document.getElementById("st-milking").textContent      = DEMO_DATA.summary.milkGivingCattle;
+document.getElementById("st-birth").textContent        = DEMO_DATA.summary.expectedBirthCattle;
+document.getElementById("st-milk").textContent         = DEMO_DATA.summary.totalMilk;
+
+/* ---------- Latest Cattle grid ---------- */
+const grid = document.getElementById("cattleGrid");
+DEMO_DATA.latestCattle.forEach(c => {
+  grid.insertAdjacentHTML("beforeend", `
+    <div class="cattle-item">
+      <div class="thumb"><i class="fa-solid fa-cow"></i></div>
+      <div class="tag">${c.tag}</div>
+      <div class="date">${c.date}</div>
+    </div>`);
+});
+
+/* ---------- Chart defaults ---------- */
+Chart.defaults.font.family = "'Open Sans', Helvetica, Arial, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = "#9aa0a8";
+
+/* ---------- Monthly Income/Expense Report (line) ---------- */
+new Chart(document.getElementById("incomeExpenseChart"), {
+  type: "line",
+  data: {
+    labels: DEMO_DATA.monthlyReport.labels,
+    datasets: [
+      {
+        label: "Income",
+        data: DEMO_DATA.monthlyReport.income,
+        borderColor: "#1ab394",
+        backgroundColor: "#1ab394",
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        tension: 0,
+        fill: false
+      },
+      {
+        label: "Expense",
+        data: DEMO_DATA.monthlyReport.expense,
+        borderColor: "#ed5565",
+        backgroundColor: "#ed5565",
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        tension: 0,
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: { beginAtZero: true, suggestedMax: 1,
+           grid: { color: "#f0f1f3" }, ticks: { stepSize: 1 } },
+      x: { grid: { display: false } }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+/* ---------- Cattle by Types (donut) ---------- */
+new Chart(document.getElementById("cattleTypesChart"), {
+  type: "doughnut",
+  data: {
+    labels: DEMO_DATA.cattleByTypes.map(d => d.label),
+    datasets: [{
+      data: DEMO_DATA.cattleByTypes.map(d => d.value),
+      backgroundColor: DEMO_DATA.cattleByTypes.map(d => d.color),
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: "62%",
+    plugins: {
+      legend: {
+        position: "right",
+        labels: { usePointStyle: true, pointStyle: "circle", boxWidth: 8, padding: 10 }
+      }
+    }
+  }
+});
+
+/* ---------- Sidebar toggle (mobile) ---------- */
+const sidebar = document.getElementById("sidebar");
+const backdrop = document.getElementById("backdrop");
+document.getElementById("burger").addEventListener("click", () => {
+  sidebar.classList.toggle("open");
+  backdrop.classList.toggle("show", sidebar.classList.contains("open"));
+});
+backdrop.addEventListener("click", () => {
+  sidebar.classList.remove("open");
+  backdrop.classList.remove("show");
+});
+</script>
+
+</body>
+</html>

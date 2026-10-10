@@ -1,0 +1,78 @@
+/* =========================================================
+   CR-LMIS — responsive.css
+   Breakpoints: Desktop (>1199) | Laptop (992-1199) |
+   Tablet (768-991) | Mobile (<768 / <576)
+   Field Officer views are optimized for mobile.
+   ========================================================= */
+
+/* ---------- Desktop (default, >1199px) ---------- */
+/* Full sidebar (260px) + main offset. Already default in style.css. */
+
+/* ---------- Laptop (992px - 1199px) ---------- */
+@media (min-width: 992px) and (max-width: 1199px){
+  .sidebar{width:230px;}
+  .main{margin-left:230px;}
+  .side-nav a{font-size:12.5px;padding:10px 16px;}
+  .kpi-card .kpi-icon{width:64px;}
+  .cattle-grid{gap:12px;}
+}
+
+/* ---------- Tablet (768px - 991px) ---------- */
+@media (min-width: 768px) and (max-width: 991px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.25);}
+  .sidebar-backdrop.show{display:block;}
+  .main{margin-left:0;}
+  .chart-wrap{height:280px;}
+  .cattle-grid{grid-template-columns:repeat(4,1fr);gap:12px;}
+  .page-head{flex-direction:column;align-items:flex-start;gap:6px;}
+}
+
+/* ---------- Mobile (<768px) ---------- */
+@media (max-width: 767px){
+  .sidebar{width:260px;transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .topbar{padding:0 12px;height:54px;}
+  .topbar .right{gap:10px;}
+  .page-head{padding:12px 14px 8px;}
+  .page-head h1{font-size:20px;}
+  .content{padding:4px 14px 16px;}
+  .chart-wrap{height:250px;}
+  .cattle-grid{grid-template-columns:repeat(3,1fr);gap:10px;}
+  .app-footer{flex-direction:column;gap:4px;text-align:center;font-size:11px;}
+  .kpi-card .kpi-value{font-size:17px;}
+
+  /* Tables scroll horizontally on small screens */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .table-wrap .table-crlmis{min-width:640px;}
+
+  /* Filters stack vertically */
+  .filter-bar .row > div{margin-bottom:8px;}
+  .filter-bar .row > div:last-child{margin-bottom:0;}
+
+  /* Auth pages */
+  .auth-body{padding:14px;}
+  .auth-body-wrap{padding:22px 18px 18px;}
+  .auth-foot{padding:10px 18px;flex-direction:column;gap:6px;text-align:center;}
+}
+
+/* ---------- Extra small (<576px) ---------- */
+@media (max-width: 575px){
+  .cattle-grid{grid-template-columns:repeat(2,1fr);}
+  .kpi-card .kpi-icon{width:58px;font-size:22px;}
+  .status-card .st-icon{width:58px;}
+  .status-card .st-value{font-size:19px;}
+  .card-box .card-head{padding:12px 14px;}
+  .auth-card{max-width:100%;}
+  .brand{font-size:16px;}
+  .pagination-crlmis{flex-wrap:wrap;}
+}
+
+/* ---------- Print ---------- */
+@media print{
+  .sidebar,.topbar,.filter-bar,.app-footer{display:none!important;}
+  .main{margin-left:0!important;}
+  .card-box{box-shadow:none;border:1px solid #ddd;}
+  body{background:#fff;}
+}

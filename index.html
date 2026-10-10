@@ -1,0 +1,2806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CR-LMIS | Livestock Management Information System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root{
+  --primary:#1c84c6;--primary-dark:#146a9f;--sidebar-bg:#2b2f3a;--sidebar-brand:#22252e;
+  --sidebar-link:#aeb2bd;--sidebar-hover:#31363f;--sidebar-active:#363b48;
+  --green:#1ab394;--red:#ed5565;--blue:#1c84c6;--cyan:#23c6c8;--orange:#f8ac59;
+  --body-bg:#f3f4f7;--text:#676a6c;--text-dark:#4a4d52;--text-muted:#9aa0a8;
+  --line:#eef0f2;--border:#d9dce1;--shadow:0 1px 3px rgba(0,0,0,.07);
+}
+*{font-family:'Open Sans',Helvetica,Arial,sans-serif;}
+body{background:var(--body-bg);font-size:13px;color:var(--text);overflow-x:hidden;}
+a{color:var(--blue);}a:hover{color:var(--primary-dark);}
+a:focus-visible,button:focus-visible,input:focus-visible,.form-check-input:focus-visible{outline:3px solid rgba(28,132,198,.45);outline-offset:2px;}
+
+/* ---- SPA view switching ---- */
+.view{display:none;}
+.view.active{display:block;}
+.app-shell{display:none;}
+.app-shell.show{display:flex;}
+
+/* ---- Sidebar ---- */
+.sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--sidebar-bg);z-index:1050;transition:transform .25s ease;display:flex;flex-direction:column;}
+.sidebar .brand{height:60px;background:var(--sidebar-brand);color:#fff;display:flex;align-items:center;padding:0 20px;font-size:17px;font-weight:700;letter-spacing:.3px;cursor:pointer;}
+.sidebar .brand i{color:#fff;margin-right:10px;font-size:20px;}
+.side-search{padding:14px 15px;border-bottom:1px solid rgba(255,255,255,.06);}
+.side-search .input-group{background:#23262f;border-radius:4px;}
+.side-search input{background:transparent;border:none;color:#cfd2d8;font-size:12px;box-shadow:none!important;padding:8px 12px;}
+.side-search input::placeholder{color:#7c8089;}
+.side-search .input-group-text{background:transparent;border:none;color:#7c8089;padding:8px 12px;}
+.side-nav-label{padding:16px 20px 6px;font-size:10px;font-weight:600;color:#6a6f7b;letter-spacing:1px;text-transform:uppercase;}
+.side-nav{flex:1;overflow-y:auto;padding-bottom:16px;}
+.side-nav::-webkit-scrollbar{width:5px;} .side-nav::-webkit-scrollbar-thumb{background:#454a58;border-radius:3px;}
+.side-nav a{display:flex;align-items:center;color:var(--sidebar-link);padding:10px 20px;text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:background .15s;}
+.side-nav a i{width:22px;margin-right:10px;font-size:14px;text-align:center;}
+.side-nav a:hover{background:var(--sidebar-hover);color:#fff;}
+.side-nav a.active{background:var(--sidebar-active);color:#fff;border-left-color:var(--blue);}
+.side-nav a .chev{margin-left:auto;font-size:11px;color:#6a6f7b;}
+.side-nav a.hidden{display:none;}
+.side-logout{margin:10px 14px;background:transparent;border:1px solid #4a4f5c;color:var(--sidebar-link);border-radius:4px;padding:9px;font-size:12.5px;color:#e8b04b;}
+.side-logout:hover{background:#3a3f4c;color:#fff;border-color:#e8b04b;}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1045;}
+.sidebar-backdrop.show{display:block;}
+
+/* ---- Main ---- */
+.main{margin-left:260px;min-height:100vh;display:flex;flex-direction:column;transition:margin .25s ease;flex:1;}
+.topbar{height:60px;background:#fff;display:flex;align-items:center;padding:0 20px;box-shadow:0 1px 3px rgba(0,0,0,.06);position:sticky;top:0;z-index:1040;}
+.topbar .burger{background:none;border:none;color:var(--text);font-size:17px;padding:6px 10px;}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:18px;}
+.topbar .right .tool{color:#8a8f99;font-size:15px;text-decoration:none;background:none;border:none;}
+.topbar .right .tool:hover{color:var(--blue);}
+.topbar .user{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-weight:600;background:none;border:none;}
+.topbar .avatar{width:32px;height:32px;border-radius:50%;background:#e8eaee;color:#8a8f99;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.topbar .badge-dot{position:absolute;top:-2px;right:-2px;font-size:9px;}
+
+/* ---- Page head ---- */
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;padding:16px 22px 10px;flex-wrap:wrap;gap:8px;}
+.page-head h1{font-size:24px;font-weight:600;color:var(--text-dark);margin:0;}
+.page-head .breadcrumb{font-size:12px;color:#8a8f99;margin:0;}
+.content{padding:6px 22px 20px;flex:1;}
+
+/* ---- Cards ---- */
+.card-box{background:#fff;border-radius:3px;box-shadow:var(--shadow);margin-bottom:22px;}
+.card-box .card-head{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line);}
+.card-box .card-head h5{font-size:14px;font-weight:600;color:var(--text-dark);margin:0;}
+.card-box .card-head .tools{margin-left:auto;display:flex;gap:10px;align-items:center;}
+.card-box.border-top-green{border-top:2px solid var(--green);}
+.card-box.border-top-red{border-top:2px solid var(--red);}
+.card-box.border-top-blue{border-top:2px solid var(--blue);}
+.card-box.border-top-orange{border-top:2px solid var(--orange);}
+
+/* ---- KPI ---- */
+.kpi-card{background:#fff;border-radius:3px;box-shadow:var(--shadow);display:flex;align-items:stretch;overflow:hidden;margin-bottom:22px;}
+.kpi-card .kpi-icon{width:78px;min-height:78px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;flex-shrink:0;}
+.kpi-card .kpi-body{padding:14px 16px;display:flex;flex-direction:column;justify-content:center;}
+.kpi-card .kpi-label{font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;}
+.kpi-card .kpi-value{font-size:20px;font-weight:700;color:var(--text-dark);line-height:1.3;}
+.kpi-sm .kpi-icon{width:56px;min-height:64px;font-size:20px;}
+.kpi-sm .kpi-value{font-size:17px;}
+
+/* ---- Charts ---- */
+.chart-wrap{padding:16px;position:relative;height:300px;}
+
+/* ---- Cattle grid ---- */
+.cattle-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:16px;}
+.cattle-item{text-align:center;}
+.cattle-item .thumb{background:linear-gradient(145deg,#e9ecef,#d6dae0);border-radius:2px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:#a7adb6;font-size:34px;}
+.cattle-item .tag{font-weight:700;color:var(--text-dark);margin-top:8px;font-size:13px;}
+.cattle-item .date{font-size:11px;color:var(--text-muted);}
+.view-all{display:block;text-align:center;padding:12px;color:var(--blue);font-weight:600;text-decoration:none;}
+.view-all:hover{color:var(--primary-dark);}
+
+/* ---- Status cards ---- */
+.status-card{border-radius:3px;color:#fff;display:flex;align-items:stretch;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.12);margin-bottom:22px;}
+.status-card .st-icon{width:74px;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(0,0,0,.14);flex-shrink:0;}
+.status-card .st-body{padding:14px 16px;flex:1;}
+.status-card .st-title{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.status-card .st-value{font-size:22px;font-weight:700;line-height:1.2;}
+.status-card .st-sub{font-size:12px;opacity:.9;}
+.st-red{background:var(--red);} .st-blue{background:var(--blue);} .st-green{background:var(--green);} .st-orange{background:var(--orange);} .st-cyan{background:var(--cyan);}
+
+/* ---- Tables ---- */
+.table-crlmis{font-size:13px;margin-bottom:0;}
+.table-crlmis thead th{background:#f8f9fb;color:var(--text-dark);font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--line);padding:11px 14px;white-space:nowrap;}
+.table-crlmis tbody td{border-bottom:1px solid var(--line);padding:11px 14px;vertical-align:middle;}
+.table-crlmis tbody tr:hover{background:#fafbfc;}
+.table-crlmis .actions a{color:#8a8f99;margin-right:8px;font-size:13px;}
+.table-crlmis .actions a:hover{color:var(--blue);}
+
+/* ---- Badges / buttons / forms ---- */
+.badge-status{font-size:11px;font-weight:600;padding:4px 10px;border-radius:12px;display:inline-block;}
+.badge-green{background:rgba(26,179,148,.14);color:#128d74;}
+.badge-red{background:rgba(237,86,101,.14);color:#d63a4b;}
+.badge-blue{background:rgba(28,132,198,.14);color:#146a9f;}
+.badge-orange{background:rgba(248,172,89,.16);color:#d08a2f;}
+.btn-crlmis{background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:600;}
+.btn-crlmis:hover{background:var(--primary-dark);color:#fff;}
+.btn-crlmis-outline{border:1px solid var(--blue);color:var(--blue);background:#fff;font-size:13px;font-weight:600;}
+.btn-crlmis-outline:hover{background:var(--blue);color:#fff;}
+.form-label{font-size:12px;font-weight:600;color:var(--text-dark);}
+.form-control,.form-select{border:1px solid var(--border);font-size:13px;}
+.form-control:focus,.form-select:focus{border-color:var(--blue);box-shadow:0 0 0 .15rem rgba(28,132,198,.15);}
+.filter-bar{background:#fff;border:1px solid var(--line);border-radius:3px;padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow);}
+
+/* ---- Pagination ---- */
+.pagination-crlmis{margin:14px;}
+.pagination-crlmis .page-link{border:1px solid var(--border);color:var(--text);font-size:12px;padding:5px 12px;border-radius:3px;margin:0 2px;}
+.pagination-crlmis .page-item.active .page-link{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+/* ---- Modal / toast ---- */
+.modal-content{border:none;border-radius:3px;box-shadow:0 10px 35px rgba(0,0,0,.25);}
+.modal-header{background:#f8f9fb;border-bottom:1px solid var(--line);padding:14px 18px;}
+.modal-header .modal-title{font-size:15px;font-weight:700;color:var(--text-dark);}
+.crlmis-toast{background:#fff;border:none;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.18);border-left:4px solid var(--blue);font-size:13px;}
+.crlmis-toast.toast-success{border-left-color:var(--green);}
+.crlmis-toast.toast-error{border-left-color:var(--red);}
+.crlmis-toast.toast-warning{border-left-color:var(--orange);}
+
+/* ---- Loading / empty ---- */
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;color:var(--text-muted);font-size:13px;gap:10px;}
+.loading-state .spinner-border{width:26px;height:26px;border-width:3px;color:var(--blue);}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;color:var(--text-muted);text-align:center;}
+.empty-state i{font-size:36px;margin-bottom:10px;color:#c2c6cc;}
+.empty-state p{margin:0 0 4px;font-size:13px;}
+.empty-state .empty-hint{font-size:12px;color:#b3b8c0;}
+
+/* ---- Auth ---- */
+.auth-body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2b2f3a 0%,#20232b 55%,#1a1d24 100%);padding:20px;}
+.auth-card{width:100%;max-width:420px;background:#fff;border-radius:8px;box-shadow:0 10px 35px rgba(0,0,0,.35);overflow:hidden;}
+.auth-brand{background:var(--sidebar-brand);color:#fff;padding:24px;text-align:center;border-bottom:3px solid var(--blue);}
+.auth-brand .logo{width:52px;height:52px;margin:0 auto 10px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;}
+.auth-brand h1{font-size:20px;font-weight:700;margin:0;}
+.auth-brand p{font-size:12px;color:var(--sidebar-link);margin:4px 0 0;}
+.auth-body-wrap{padding:28px 30px 22px;}
+.auth-foot{background:#f8f9fb;border-top:1px solid var(--line);padding:12px 30px;display:flex;justify-content:space-between;font-size:12px;color:var(--text);flex-wrap:wrap;gap:6px;}
+.auth-foot a{color:var(--blue);text-decoration:none;font-weight:600;}
+.demo-box{background:#fff8ec;border:1px dashed #e8b04b;border-radius:4px;padding:10px 12px;font-size:12px;color:#6b5a33;margin-top:16px;}
+.demo-box strong{color:#b07c16;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+.input-group-text{background:#f4f5f7;border:1px solid var(--border);color:#8a8f99;border-right:0;}
+.form-control.br-left{border-left:0;}
+
+/* ---- Enhanced Landing Page Styling ---- */
+.landing{min-height:100vh;display:flex;flex-direction:column;background:#f8fafc;color:#1e293b;overflow-x:hidden;}
+
+/* Glass Navbar */
+.landing-nav{
+  position:sticky;top:0;z-index:1000;
+  background:rgba(15,23,42,0.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  color:#fff;display:flex;align-items:center;padding:0 32px;height:72px;
+  border-bottom:1px solid rgba(255,255,255,0.09);box-shadow:0 4px 20px rgba(0,0,0,0.15);
+}
+.landing-nav .brand{
+  color:#fff;font-weight:800;font-size:19px;text-decoration:none;
+  display:flex;align-items:center;gap:12px;letter-spacing:-0.3px;
+}
+.landing-nav .brand .brand-badge{
+  background:linear-gradient(135deg,#10b981,#06b6d4);
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;box-shadow:0 4px 12px rgba(16,185,129,0.35);
+}
+.landing-nav .links{margin-left:auto;display:flex;gap:24px;align-items:center;}
+.landing-nav .links a{color:#cbd5e1;text-decoration:none;font-size:13.5px;font-weight:600;transition:color .2s;}
+.landing-nav .links a:hover{color:#38bdf8;}
+.landing-nav .btn-nav-signin{
+  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+  color:#fff!important;padding:9px 22px;border-radius:6px;
+  font-weight:700;font-size:13.5px;border:none;
+  box-shadow:0 4px 14px rgba(16,185,129,0.35);transition:all .2s ease;
+}
+.landing-nav .btn-nav-signin:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(16,185,129,0.5);}
+
+/* Hero Section */
+.landing-hero{
+  background:linear-gradient(145deg,#064e3b 0%,#0f2b38 45%,#0f172a 100%);
+  color:#fff;padding:80px 32px 90px;position:relative;overflow:hidden;
+}
+.landing-hero::before{
+  content:'';position:absolute;top:-20%;right:-10%;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(16,185,129,0.2) 0%,rgba(6,182,212,0.08) 40%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.landing-hero::after{
+  content:'';position:absolute;bottom:-15%;left:-5%;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(245,158,11,0.12) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.hero-container{
+  max-width:1240px;margin:0 auto;position:relative;z-index:2;
+  display:grid;grid-template-columns:1.15fr 0.85fr;gap:48px;align-items:center;
+}
+.hero-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  backdrop-filter:blur(8px);padding:6px 16px;border-radius:30px;
+  font-size:12px;font-weight:700;color:#a7f3d0;letter-spacing:.5px;text-transform:uppercase;margin-bottom:20px;
+}
+.hero-pill .dot{
+  width:8px;height:8px;border-radius:50%;background:#10b981;
+  box-shadow:0 0 10px #10b981;animation:pulse-green 2s infinite;
+}
+@keyframes pulse-green{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:.5;transform:scale(1.2);}
+}
+.landing-hero h1{font-size:42px;font-weight:800;line-height:1.2;letter-spacing:-.8px;margin-bottom:18px;color:#fff;}
+.landing-hero h1 .gradient-text{
+  background:linear-gradient(135deg,#34d399 0%,#38bdf8 50%,#fcd34d 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.landing-hero p.lead{font-size:16px;line-height:1.6;color:#cbd5e1;margin-bottom:32px;max-width:640px;}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:28px;}
+.btn-hero-primary{
+  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+  color:#fff;font-weight:700;padding:13px 28px;border-radius:6px;
+  text-decoration:none;font-size:14.5px;display:inline-flex;align-items:center;gap:10px;
+  box-shadow:0 4px 18px rgba(16,185,129,0.45);transition:all .2s ease;border:none;
+}
+.btn-hero-primary:hover{transform:translateY(-2px);color:#fff;box-shadow:0 8px 25px rgba(16,185,129,0.55);}
+.btn-hero-secondary{
+  background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);
+  font-weight:700;padding:13px 24px;border-radius:6px;text-decoration:none;font-size:14.5px;
+  display:inline-flex;align-items:center;gap:8px;transition:all .2s ease;backdrop-filter:blur(8px);
+}
+.btn-hero-secondary:hover{background:rgba(255,255,255,0.2);color:#fff;transform:translateY(-2px);}
+.hero-badges-row{display:flex;flex-wrap:wrap;gap:16px;}
+.hero-badge-item{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;}
+.hero-badge-item i{color:#34d399;}
+
+/* Hero Visual Card Showcase */
+.hero-showcase{position:relative;}
+.hero-card-frame{
+  background:#fff;border-radius:16px;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.1);
+  overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.2);
+}
+.hero-img-wrap{position:relative;height:260px;overflow:hidden;background:#0f172a;}
+.hero-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+.hero-card-frame:hover .hero-img-wrap img{transform:scale(1.04);}
+.hero-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(15,23,42,0.1) 0%,rgba(15,23,42,0.85) 100%);
+  display:flex;align-items:flex-end;padding:20px;color:#fff;
+}
+.hero-img-overlay h4{font-size:17px;font-weight:800;margin:0;color:#fff;}
+.hero-img-overlay p{font-size:12px;color:#cbd5e1;margin:4px 0 0;}
+.hero-card-body{padding:20px;background:#fff;color:#334155;}
+.hero-mini-kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.hero-mini-kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;}
+.hero-mini-kpi .label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;}
+.hero-mini-kpi .val{font-size:20px;font-weight:800;color:#0f172a;}
+.floating-chip{
+  position:absolute;background:rgba(15,23,42,0.92);backdrop-filter:blur(10px);
+  color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:12px;
+  padding:10px 16px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 15px 30px rgba(0,0,0,0.3);z-index:5;
+}
+.chip-top-right{top:-16px;right:-16px;}
+.chip-bot-left{bottom:24px;left:-20px;}
+.floating-chip .chip-icon{
+  width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.chip-green .chip-icon{background:rgba(16,185,129,0.25);color:#34d399;}
+.chip-amber .chip-icon{background:rgba(245,158,11,0.25);color:#fbbf24;}
+.floating-chip .chip-text{font-size:11px;color:#94a3b8;}
+.floating-chip .chip-title{font-size:13px;font-weight:700;color:#fff;}
+
+/* Stats Strip */
+.landing-stats-strip{
+  background:#fff;border-bottom:1px solid #e2e8f0;padding:28px 24px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.04);
+}
+.stats-strip-container{
+  max-width:1240px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:18px;
+}
+.stat-strip-box{display:flex;align-items:center;gap:14px;padding:8px;}
+.stat-strip-icon{
+  width:50px;height:50px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+}
+.stat-strip-info .num{font-size:23px;font-weight:800;color:#0f172a;line-height:1.1;}
+.stat-strip-info .lbl{font-size:12px;font-weight:600;color:#64748b;margin-top:2px;}
+
+/* Sections */
+.landing-section{padding:70px 28px;max-width:1240px;margin:0 auto;width:100%;}
+.section-header{text-align:center;max-width:720px;margin:0 auto 48px;}
+.section-tag{
+  display:inline-block;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;
+  padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:12px;
+}
+.section-header h2{font-size:32px;font-weight:800;color:#0f172a;letter-spacing:-.5px;margin-bottom:12px;}
+.section-header p{font-size:15px;color:#64748b;line-height:1.6;}
+
+/* Species Gallery */
+.species-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+.species-card{
+  background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+  overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);
+  transition:all .3s ease;display:flex;flex-direction:column;
+}
+.species-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);
+  border-color:#cbd5e1;
+}
+.species-img-wrap{height:175px;position:relative;overflow:hidden;background:#e2e8f0;}
+.species-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;}
+.species-card:hover .species-img-wrap img{transform:scale(1.08);}
+.species-badge{
+  position:absolute;top:12px;right:12px;background:rgba(15,23,42,0.85);
+  backdrop-filter:blur(6px);color:#34d399;font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:20px;
+}
+.species-card-body{padding:18px;flex:1;display:flex;flex-direction:column;}
+.species-card-body h3{font-size:16.5px;font-weight:800;color:#0f172a;margin-bottom:6px;}
+.species-card-body p{font-size:12.5px;color:#64748b;margin-bottom:14px;flex:1;line-height:1.5;}
+.species-card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid #f1f5f9;padding-top:12px;font-size:12px;
+}
+.species-card-footer .stat-val{font-weight:700;color:#0f172a;}
+
+/* Feature Grid */
+.modern-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.modern-feature-card{
+  background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+  padding:28px 24px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);
+  transition:all .3s ease;position:relative;overflow:hidden;
+}
+.modern-feature-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,#10b981,#06b6d4);opacity:0;transition:opacity .3s ease;
+}
+.modern-feature-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 20px 25px -5px rgba(0,0,0,0.08);border-color:#cbd5e1;
+}
+.modern-feature-card:hover::before{opacity:1;}
+.feature-icon-wrap{
+  width:56px;height:56px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px;
+}
+.modern-feature-card h3{font-size:17px;font-weight:800;color:#0f172a;margin-bottom:10px;}
+.modern-feature-card p{font-size:13px;color:#64748b;line-height:1.6;margin-bottom:16px;}
+.feature-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.feature-tag-item{
+  background:#f1f5f9;color:#475569;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;
+}
+
+/* Workflow Timeline */
+.workflow-timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;position:relative;}
+.workflow-card{
+  background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+  padding:22px 18px;position:relative;box-shadow:0 4px 6px -1px rgba(0,0,0,0.04);transition:all .3s ease;
+}
+.workflow-card:hover{
+  transform:translateY(-4px);border-color:#10b981;
+  box-shadow:0 10px 15px -3px rgba(16,185,129,0.1);
+}
+.workflow-step-num{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#10b981,#059669);color:#fff;
+  font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+}
+.workflow-card h4{font-size:14.5px;font-weight:800;color:#0f172a;margin-bottom:8px;}
+.workflow-card p{font-size:12px;color:#64748b;line-height:1.5;margin:0;}
+
+/* Role Personas Grid */
+.persona-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.persona-card{
+  background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+  padding:22px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.04);
+  display:flex;flex-direction:column;transition:all .3s ease;
+}
+.persona-card:hover{transform:translateY(-4px);box-shadow:0 14px 20px -4px rgba(0,0,0,0.08);}
+.persona-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.persona-avatar{
+  width:46px;height:46px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.persona-title{font-size:15.5px;font-weight:800;color:#0f172a;margin:0;}
+.persona-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;}
+.persona-desc{font-size:12.5px;color:#64748b;line-height:1.5;margin-bottom:16px;flex:1;}
+.btn-try-role{
+  width:100%;padding:9px;border-radius:6px;font-size:12.5px;font-weight:700;
+  border:1px solid #cbd5e1;background:#f8fafc;color:#334155;cursor:pointer;
+  transition:all .2s ease;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-try-role:hover{background:#0f172a;color:#fff;border-color:#0f172a;}
+
+/* LGA Coverage Banner */
+.lga-coverage-box{
+  background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+  border-radius:16px;padding:36px 32px;color:#fff;margin-top:40px;
+}
+.lga-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
+.lga-chip{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+  color:#e2e8f0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+}
+
+/* CTA Footer Strip */
+.landing-cta-banner{
+  background:linear-gradient(135deg,#059669 0%,#0d9488 50%,#0284c7 100%);
+  border-radius:18px;padding:50px 36px;color:#fff;text-align:center;
+  margin-top:60px;box-shadow:0 20px 30px -10px rgba(5,150,105,0.4);
+}
+.landing-cta-banner h2{font-size:32px;font-weight:800;margin-bottom:12px;color:#fff;}
+.landing-cta-banner p{font-size:16px;max-width:680px;margin:0 auto 28px;color:#e0f2fe;}
+
+/* Rich Footer */
+.modern-landing-footer{
+  background:#0b1120;color:#94a3b8;padding:60px 32px 30px;
+  border-top:1px solid rgba(255,255,255,0.08);
+}
+.footer-top-grid{
+  max-width:1240px;margin:0 auto;
+  display:grid;grid-template-columns:1.5fr 1fr 1fr 1.2fr;gap:40px;
+  padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.footer-col h5{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px;letter-spacing:.3px;}
+.footer-col ul{list-style:none;padding:0;margin:0;}
+.footer-col ul li{margin-bottom:10px;}
+.footer-col ul li a{color:#94a3b8;text-decoration:none;font-size:13px;transition:color .2s;}
+.footer-col ul li a:hover{color:#38bdf8;}
+.footer-bottom{
+  max-width:1240px;margin:30px auto 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:12px;flex-wrap:wrap;gap:12px;
+}
+
+/* ---- Notifications / reports / analytics ---- */
+.note-list{list-style:none;margin:0;padding:0;}
+.note-item{display:flex;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);align-items:flex-start;}
+.note-item i{font-size:18px;margin-top:2px;}
+.note-item .n-title{font-weight:700;color:var(--text-dark);font-size:13px;}
+.note-item .n-msg{font-size:12px;color:var(--text);}
+.report-card{background:#fff;border:1px solid var(--line);border-radius:5px;padding:18px;box-shadow:var(--shadow);height:100%;}
+.report-card h5{font-size:14px;font-weight:700;color:var(--text-dark);}
+.report-card p{font-size:12px;color:var(--text-muted);margin:4px 0 12px;}
+.obs-item{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12.5px;align-items:flex-start;}
+.obs-item i{color:var(--orange);margin-top:2px;}
+.demo-caption{font-size:11px;color:#b07c16;background:#fff8ec;border:1px dashed #e8b04b;border-radius:3px;padding:6px 10px;margin-bottom:14px;display:inline-block;}
+
+/* ---- Footer ---- */
+.app-footer{background:#fff;border-top:1px solid #e7e9ec;padding:12px 22px;display:flex;justify-content:space-between;font-size:12px;color:#8a8f99;flex-wrap:wrap;gap:4px;}
+
+/* ---- Responsive ---- */
+@media (min-width:992px) and (max-width:1199px){
+  .sidebar{width:230px;}.main{margin-left:230px;}.side-nav a{font-size:12.5px;padding:10px 16px;}
+  .species-grid{grid-template-columns:repeat(3,1fr);}
+  .workflow-timeline{grid-template-columns:repeat(3,1fr);}
+  .stats-strip-container{grid-template-columns:repeat(3,1fr);}
+}
+@media (min-width:768px) and (max-width:991px){
+  .sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.25);}.sidebar-backdrop.show{display:block;}.main{margin-left:0;}.cattle-grid{gap:12px;}
+  .hero-container{grid-template-columns:1fr;}
+  .species-grid{grid-template-columns:repeat(2,1fr);}
+  .modern-feature-grid{grid-template-columns:repeat(2,1fr);}
+  .workflow-timeline{grid-template-columns:repeat(2,1fr);}
+  .persona-grid{grid-template-columns:repeat(2,1fr);}
+  .stats-strip-container{grid-template-columns:repeat(3,1fr);}
+  .footer-top-grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:767px){
+  .sidebar{width:260px;transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .topbar{height:54px;padding:0 12px;}
+  .page-head{padding:12px 14px 8px;}
+  .content{padding:4px 14px 16px;}
+  .chart-wrap{height:250px;}
+  .cattle-grid{grid-template-columns:repeat(3,1fr);}
+  .landing-nav{padding:0 16px;}
+  .landing-nav .links a:not(.btn-nav-signin){display:none;}
+  .hero-container{grid-template-columns:1fr;gap:32px;}
+  .landing-hero h1{font-size:30px;}
+  .landing-hero{padding:50px 18px 60px;}
+  .species-grid{grid-template-columns:1fr;}
+  .modern-feature-grid{grid-template-columns:1fr;}
+  .workflow-timeline{grid-template-columns:1fr;}
+  .persona-grid{grid-template-columns:1fr;}
+  .stats-strip-container{grid-template-columns:1fr;}
+  .footer-top-grid{grid-template-columns:1fr;}
+  .floating-chip{display:none;}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .table-wrap .table-crlmis{min-width:640px;}
+  .app-footer{flex-direction:column;text-align:center;}
+}
+@media (max-width:575px){.cattle-grid{grid-template-columns:repeat(2,1fr);}}
+@media print{.sidebar,.topbar,.filter-bar,.app-footer,.landing-nav,.modern-landing-footer{display:none!important;}.main{margin-left:0!important;}.card-box{box-shadow:none;border:1px solid #ddd;}}
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING PAGE (index entry) ============ -->
+<section id="view-landing" class="view">
+  <div class="landing">
+    <!-- Navbar -->
+    <nav class="landing-nav">
+      <a class="brand" href="#/">
+        <div class="brand-badge"><i class="fa-solid fa-cow"></i></div>
+        <span>CR-LMIS</span>
+      </a>
+      <div class="links">
+        <a href="#/features"><i class="fa-solid fa-cubes me-1"></i>Modules</a>
+        <a href="#/species"><i class="fa-solid fa-paw me-1"></i>Species</a>
+        <a href="#/workflow"><i class="fa-solid fa-route me-1"></i>Field Workflow</a>
+        <a href="#/roles"><i class="fa-solid fa-user-shield me-1"></i>Roles</a>
+        <a href="#/login" class="btn-nav-signin"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="landing-hero">
+      <div class="hero-container">
+        <div>
+          <div class="hero-pill">
+            <span class="dot"></span>
+            <span>Government of Cross River State · Ministry of Livestock</span>
+          </div>
+          <h1>
+            Smart Livestock Management &amp; <br>
+            <span class="gradient-text">Disease Surveillance System</span>
+          </h1>
+          <p class="lead">
+            A unified digital intelligence platform empowering Cross River State across all 18 LGAs with real-time livestock census, disease early-warning alerts, cold-chain vaccination logistics, and farmer empowerment.
+          </p>
+          <div class="hero-actions">
+            <a href="#/login" class="btn-hero-primary">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>Launch Portal
+            </a>
+            <button type="button" class="btn-hero-secondary js-launch-role" data-user="admin@example.com">
+              <i class="fa-solid fa-flask" style="color:#fcd34d;"></i>Test Drive Demo
+            </button>
+            <a href="#/features" class="btn-hero-secondary">
+              <i class="fa-solid fa-circle-play"></i>Explore Features
+            </a>
+          </div>
+          <div class="hero-badges-row">
+            <div class="hero-badge-item"><i class="fa-solid fa-shield-halved"></i> Role-Based Access</div>
+            <div class="hero-badge-item"><i class="fa-solid fa-location-dot"></i> 18 LGAs Active</div>
+            <div class="hero-badge-item"><i class="fa-solid fa-satellite-dish"></i> Real-time Surveillance</div>
+          </div>
+        </div>
+
+        <!-- Right Visual Card Showcase -->
+        <div class="hero-showcase">
+          <div class="floating-chip chip-top-right chip-green">
+            <div class="chip-icon"><i class="fa-solid fa-shield-virus"></i></div>
+            <div>
+              <div class="chip-title">Surveillance Radar</div>
+              <div class="chip-text">Active in 18 LGAs · 0 Outbreaks</div>
+            </div>
+          </div>
+
+          <div class="hero-card-frame">
+            <div class="hero-img-wrap">
+              <img src="https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=800&q=80" alt="Cross River State Livestock" onerror="this.src='https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'">
+              <div class="hero-img-overlay">
+                <div>
+                  <h4>Cross River State Central Herd Registry</h4>
+                  <p><i class="fa-solid fa-location-dot me-1 text-info"></i>Obudu, Ikom, Calabar &amp; Ogoja Zones</p>
+                </div>
+              </div>
+            </div>
+            <div class="hero-card-body">
+              <div class="hero-mini-kpis">
+                <div class="hero-mini-kpi">
+                  <div class="label">Vaccination Rate</div>
+                  <div class="val text-success">98.4%</div>
+                </div>
+                <div class="hero-mini-kpi">
+                  <div class="label">Census Count</div>
+                  <div class="val text-primary">172,000+</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="floating-chip chip-bot-left chip-amber">
+            <div class="chip-icon"><i class="fa-solid fa-syringe"></i></div>
+            <div>
+              <div class="chip-title">CBPP &amp; PPR Campaign</div>
+              <div class="chip-text">Ongoing Target: 50,000 Doses</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats Ticker Strip -->
+    <div class="landing-stats-strip">
+      <div class="stats-strip-container">
+        <div class="stat-strip-box">
+          <div class="stat-strip-icon" style="background:#ecfdf5;color:#10b981;"><i class="fa-solid fa-map-location-dot"></i></div>
+          <div class="stat-strip-info">
+            <div class="num">18 LGAs</div>
+            <div class="lbl">Statewide Coverage</div>
+          </div>
+        </div>
+        <div class="stat-strip-box">
+          <div class="stat-strip-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-strip-info">
+            <div class="num">15,400+</div>
+            <div class="lbl">Registered Farmers</div>
+          </div>
+        </div>
+        <div class="stat-strip-box">
+          <div class="stat-strip-icon" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-cow"></i></div>
+          <div class="stat-strip-info">
+            <div class="num">172,000+</div>
+            <div class="lbl">Tagged Livestock</div>
+          </div>
+        </div>
+        <div class="stat-strip-box">
+          <div class="stat-strip-icon" style="background:#fdf2f8;color:#db2777;"><i class="fa-solid fa-syringe"></i></div>
+          <div class="stat-strip-info">
+            <div class="num">99.4%</div>
+            <div class="lbl">Vaccine Tracking</div>
+          </div>
+        </div>
+        <div class="stat-strip-box">
+          <div class="stat-strip-icon" style="background:#f0fdf4;color:#16a34a;"><i class="fa-solid fa-truck-medical"></i></div>
+          <div class="stat-strip-info">
+            <div class="num">24/7</div>
+            <div class="lbl">Veterinary Response</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Species Catalog & Photo Gallery -->
+    <section class="landing-section" id="landing-species">
+      <div class="section-header">
+        <span class="section-tag">State Livestock Portfolio</span>
+        <h2>Managed Species &amp; Breeds</h2>
+        <p>Comprehensive biological profiles, identification tags, health records, and productivity metrics across all registered livestock categories in Cross River State.</p>
+      </div>
+
+      <div class="species-grid">
+        <!-- Cattle -->
+        <div class="species-card">
+          <div class="species-img-wrap">
+            <img src="https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=600&q=80" alt="Cattle Breeding">
+            <span class="species-badge"><i class="fa-solid fa-shield-heart me-1"></i>Priority Monitored</span>
+          </div>
+          <div class="species-card-body">
+            <h3>Cattle (Bovine)</h3>
+            <p>Bunaji (White Fulani), Muturu, Red Bororo, and Sokoto Gudali tracked for beef, dairy yield, and breed preservation.</p>
+            <div class="species-card-footer">
+              <span class="text-muted">State Count</span>
+              <span class="stat-val text-success">84,200 heads</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goats -->
+        <div class="species-card">
+          <div class="species-img-wrap">
+            <img src="https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&w=600&q=80" alt="Goats">
+            <span class="species-badge"><i class="fa-solid fa-check me-1"></i>PPR Free Zone</span>
+          </div>
+          <div class="species-card-body">
+            <h3>Goats (Caprine)</h3>
+            <p>West African Dwarf (WAD), Red Sokoto, and Sahelian breeds monitored with automated PPR vaccination alerts.</p>
+            <div class="species-card-footer">
+              <span class="text-muted">State Count</span>
+              <span class="stat-val text-primary">48,500 heads</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sheep -->
+        <div class="species-card">
+          <div class="species-img-wrap">
+            <img src="https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?auto=format&fit=crop&w=600&q=80" alt="Sheep">
+            <span class="species-badge"><i class="fa-solid fa-dna me-1"></i>Genotyped</span>
+          </div>
+          <div class="species-card-body">
+            <h3>Sheep (Ovine)</h3>
+            <p>West African Dwarf Sheep, Yankasa, and Uda breeds tracked for grazing pasture records and routine deworming logs.</p>
+            <div class="species-card-footer">
+              <span class="text-muted">State Count</span>
+              <span class="stat-val text-warning">26,300 heads</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Poultry & Swine -->
+        <div class="species-card">
+          <div class="species-img-wrap">
+            <img src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80" alt="Poultry and Swine">
+            <span class="species-badge"><i class="fa-solid fa-bell me-1"></i>Avian Bio-Security</span>
+          </div>
+          <div class="species-card-body">
+            <h3>Poultry &amp; Swine</h3>
+            <p>Broilers, layers, and Large White swine with strict biosecurity tracking for African Swine Fever and Avian Influenza.</p>
+            <div class="species-card-footer">
+              <span class="text-muted">State Count</span>
+              <span class="stat-val text-info">13,000+ units</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Modules Section -->
+    <section class="landing-section" style="background:#f1f5f9;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;" id="landing-features">
+      <div class="section-header">
+        <span class="section-tag">System Capabilities</span>
+        <h2>Core Integrated Modules</h2>
+        <p>A high-performance suite engineered specifically for the Ministry of Livestock, veterinary field personnel, and agricultural policy makers.</p>
+      </div>
+
+      <div class="modern-feature-grid">
+        <!-- 1. Farmer Registry -->
+        <div class="modern-feature-card">
+          <div class="feature-icon-wrap" style="background:#ecfdf5;color:#059669;">
+            <i class="fa-solid fa-address-card"></i>
+          </div>
+          <h3>Farmer &amp; Farm Registry</h3>
+          <p>Unique government identification numbers (<code>CR-FRM-000001</code>, <code>CR-FARM-000001</code>), GPS coordinates, land tenure details, and household socio-demographics.</p>
+          <div class="feature-tags">
+            <span class="feature-tag-item"><i class="fa-solid fa-fingerprint me-1"></i>Unique ID</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-map-pin me-1"></i>GPS Mapping</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-user-check me-1"></i>Verification</span>
+          </div>
+        </div>
+
+        <!-- 2. Livestock Analytics -->
+        <div class="modern-feature-card">
+          <div class="feature-icon-wrap" style="background:#eff6ff;color:#2563eb;">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <h3>Livestock Population Intelligence</h3>
+          <p>Real-time census calculated from primary field entries. Drill down by species, LGA, breed, sex, lactation stage, and age cohort with zero hardcoded estimates.</p>
+          <div class="feature-tags">
+            <span class="feature-tag-item"><i class="fa-solid fa-tag me-1"></i>Ear Tag Tracking</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-droplet me-1"></i>Milk Yield Logs</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-arrow-trend-up me-1"></i>Live Census</span>
+          </div>
+        </div>
+
+        <!-- 3. Vaccination Logistics -->
+        <div class="modern-feature-card">
+          <div class="feature-icon-wrap" style="background:#fef3c7;color:#d97706;">
+            <i class="fa-solid fa-syringe"></i>
+          </div>
+          <h3>Vaccination &amp; Cold Chain</h3>
+          <p>Comprehensive campaign scheduler, vaccine inventory with batch numbers, expiration alerts, missed-dose triggers, and LGA coverage calculations.</p>
+          <div class="feature-tags">
+            <span class="feature-tag-item"><i class="fa-solid fa-snowflake me-1"></i>Cold Chain</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-calendar-check me-1"></i>Next Due Alert</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-boxes-stacked me-1"></i>Inventory</span>
+          </div>
+        </div>
+
+        <!-- 4. Disease Surveillance -->
+        <div class="modern-feature-card">
+          <div class="feature-icon-wrap" style="background:#fef2f2;color:#dc2626;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h3>Epidemiological Surveillance</h3>
+          <p>Early-warning outbreak detection, symptom logging, quarantine containment protocols, mortality rates, and rapid response notification dispatches.</p>
+          <div class="feature-tags">
+            <span class="feature-tag-item"><i class="fa-solid fa-radar me-1"></i>Early Warning</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-shield-virus me-1"></i>Quarantine</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-bell me-1"></i>Rapid Alert</span>
+          </div>
+        </div>
+
+        <!-- 5. Veterinary Services -->
+        <div class="modern-feature-card">
+          <div class="feature-icon-wrap" style="background:#faf5ff;color:#9333ea;">
+            <i class="fa-solid fa-briefcase-medical"></i>
+          </div>
+          <h3>Veterinary Clinical Services</h3>
+          <p>Clinical diagnoses, surgical history, prescription records, pharmaceutical inventory management, and treatment outcome logs by licensed veterinary officers.</p>
+          <div class="feature-tags">
+            <span class="feature-tag-item"><i class="fa-solid fa-stethoscope me-1"></i>Diagnosis Log</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-pills me-1"></i>Medicines</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-file-medical me-1"></i>Case History</span>
+          </div>
+        </div>
+
+        <!-- 6. Real-time Decision Support -->
+        <div class="modern-feature-card">
+          <div class="feature-icon-wrap" style="background:#ecfeff;color:#0891b2;">
+            <i class="fa-solid fa-file-export"></i>
+          </div>
+          <h3>Reports &amp; Decision Support</h3>
+          <p>One-click state reporting with multi-tier filters (Date, LGA, Species), automated policy observations, and instant export to CSV, PDF, and Excel spreadsheets.</p>
+          <div class="feature-tags">
+            <span class="feature-tag-item"><i class="fa-solid fa-file-csv me-1"></i>CSV Export</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-lightbulb me-1"></i>Smart Insights</span>
+            <span class="feature-tag-item"><i class="fa-solid fa-print me-1"></i>Print Ready</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Field Officer Workflow -->
+    <section class="landing-section" id="landing-workflow">
+      <div class="section-header">
+        <span class="section-tag">Operational Process</span>
+        <h2>Field Officer Standard Workflow</h2>
+        <p>A streamlined mobile-friendly process guiding field officers and veterinary technicians from the farmstead to central Ministry decision support.</p>
+      </div>
+
+      <div class="workflow-timeline">
+        <div class="workflow-card">
+          <div class="workflow-step-num">1</div>
+          <h4>Authenticate</h4>
+          <p>Secure sign-in with role-scoped LGA credentials on mobile, tablet or workstation.</p>
+        </div>
+        <div class="workflow-card">
+          <div class="workflow-step-num">2</div>
+          <h4>Register Farmer</h4>
+          <p>Capture national identity, contact, LGA, ward, and community in under 2 minutes.</p>
+        </div>
+        <div class="workflow-card">
+          <div class="workflow-step-num">3</div>
+          <h4>Tag &amp; Profile Animal</h4>
+          <p>Affix official ear tag, select species/breed, sex, age, and initial health status.</p>
+        </div>
+        <div class="workflow-card">
+          <div class="workflow-step-num">4</div>
+          <h4>Administer Health Log</h4>
+          <p>Record vaccinations, batch numbers, clinical diagnoses, and next booster dates.</p>
+        </div>
+        <div class="workflow-card">
+          <div class="workflow-step-num">5</div>
+          <h4>Sync &amp; Surveillance</h4>
+          <p>Submit immediate outbreak radar alerts or routine sync directly to Calabar HQ.</p>
+        </div>
+      </div>
+
+      <!-- LGA Geographic Coverage Banner -->
+      <div class="lga-coverage-box">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div>
+            <h3 class="fw-bold mb-1" style="color:#fff;"><i class="fa-solid fa-earth-africa text-info me-2"></i>18 Local Government Areas Covered</h3>
+            <p class="text-secondary mb-0" style="font-size:13px;">Full territorial monitoring across Southern, Central, and Northern Senatorial Districts of Cross River State.</p>
+          </div>
+          <span class="badge bg-success px-3 py-2 fs-7"><i class="fa-solid fa-signal me-1"></i>100% Zonal Offices Connected</span>
+        </div>
+        <div class="lga-chips">
+          <span class="lga-chip">Calabar Municipality</span>
+          <span class="lga-chip">Calabar South</span>
+          <span class="lga-chip">Akpabuyo</span>
+          <span class="lga-chip">Bakassi</span>
+          <span class="lga-chip">Odukpani</span>
+          <span class="lga-chip">Akamkpa</span>
+          <span class="lga-chip">Biase</span>
+          <span class="lga-chip">Yakurr</span>
+          <span class="lga-chip">Abi</span>
+          <span class="lga-chip">Ikom</span>
+          <span class="lga-chip">Obubra</span>
+          <span class="lga-chip">Boki</span>
+          <span class="lga-chip">Etung</span>
+          <span class="lga-chip">Ogoja</span>
+          <span class="lga-chip">Bekwarra</span>
+          <span class="lga-chip">Obudu</span>
+          <span class="lga-chip">Obanliku</span>
+          <span class="lga-chip">Yala</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- User Roles & 1-Click Demo -->
+    <section class="landing-section" style="background:#f8fafc;border-top:1px solid #e2e8f0;" id="landing-roles">
+      <div class="section-header">
+        <span class="section-tag">Role-Based Governance</span>
+        <h2>System Roles &amp; One-Click Demo</h2>
+        <p>Experience how each official level interacts with the platform. Click any role below to immediately enter the live system in development demo mode.</p>
+      </div>
+
+      <div class="persona-grid">
+        <!-- Super Admin -->
+        <div class="persona-card">
+          <div class="persona-header">
+            <div class="persona-avatar" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-crown"></i></div>
+            <div>
+              <h4 class="persona-title">Super Administrator</h4>
+              <span class="persona-badge bg-primary-subtle text-primary">Full Executive Control</span>
+            </div>
+          </div>
+          <p class="persona-desc">Access to system settings, user account creation, security privileges, audit logs, and global database administration.</p>
+          <button type="button" class="btn-try-role js-launch-role" data-user="admin@example.com">
+            <i class="fa-solid fa-arrow-right-to-bracket text-primary"></i>Launch as Super Admin
+          </button>
+        </div>
+
+        <!-- LGA Officer -->
+        <div class="persona-card">
+          <div class="persona-header">
+            <div class="persona-avatar" style="background:#ecfdf5;color:#059669;"><i class="fa-solid fa-user-shield"></i></div>
+            <div>
+              <h4 class="persona-title">LGA Livestock Officer</h4>
+              <span class="persona-badge bg-success-subtle text-success">Zonal &amp; Field Lead</span>
+            </div>
+          </div>
+          <p class="persona-desc">Registers farmers and farms, issues ear tags, tracks livestock movements, and enters disease alerts in assigned LGAs.</p>
+          <button type="button" class="btn-try-role js-launch-role" data-user="officer@example.com">
+            <i class="fa-solid fa-arrow-right-to-bracket text-success"></i>Launch as LGA Officer
+          </button>
+        </div>
+
+        <!-- Veterinary Officer -->
+        <div class="persona-card">
+          <div class="persona-header">
+            <div class="persona-avatar" style="background:#fef2f2;color:#dc2626;"><i class="fa-solid fa-user-doctor"></i></div>
+            <div>
+              <h4 class="persona-title">Veterinary Officer</h4>
+              <span class="persona-badge bg-danger-subtle text-danger">Clinical Specialist</span>
+            </div>
+          </div>
+          <p class="persona-desc">Conducts disease surveillance, manages clinical interventions, records prescription medicines, and coordinates outbreak teams.</p>
+          <button type="button" class="btn-try-role js-launch-role" data-user="vet@example.com">
+            <i class="fa-solid fa-arrow-right-to-bracket text-danger"></i>Launch as Vet Doctor
+          </button>
+        </div>
+      </div>
+
+      <!-- Call to Action Banner -->
+      <div class="landing-cta-banner">
+        <h2>Ready to Explore Cross River's Livestock Intelligence?</h2>
+        <p>Access the central database, monitor population demographics, review disease radars, or download certified Ministry executive reports.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+          <a href="#/login" class="btn btn-light text-dark fw-bold px-4 py-2" style="font-size:14px;">
+            <i class="fa-solid fa-right-to-bracket me-2 text-primary"></i>Sign In Now
+          </a>
+          <button type="button" class="btn btn-outline-light fw-bold px-4 py-2 js-launch-role" data-user="admin@example.com" style="font-size:14px;">
+            <i class="fa-solid fa-flask me-2"></i>Launch Full Demo
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rich Modern Footer -->
+    <footer class="modern-landing-footer">
+      <div class="footer-top-grid">
+        <div class="footer-col">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="brand-badge" style="width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#10b981,#06b6d4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;">
+              <i class="fa-solid fa-cow"></i>
+            </div>
+            <span class="text-white fw-bold fs-5">CR-LMIS</span>
+          </div>
+          <p style="font-size:12.5px;line-height:1.6;color:#94a3b8;">
+            Cross River State Livestock Management Information System — an official digital government initiative by the Ministry of Livestock, Calabar, Nigeria.
+          </p>
+          <div class="d-flex gap-3 mt-3">
+            <span class="badge bg-dark border border-secondary text-light px-3 py-2"><i class="fa-solid fa-server text-success me-1"></i>System Online</span>
+            <span class="badge bg-dark border border-secondary text-light px-3 py-2"><i class="fa-solid fa-lock text-info me-1"></i>SSL Encrypted</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h5>Core Modules</h5>
+          <ul>
+            <li><a href="#/farmers">Farmer Registry</a></li>
+            <li><a href="#/livestock">Livestock Census</a></li>
+            <li><a href="#/vaccinations">Vaccination Program</a></li>
+            <li><a href="#/diseases">Surveillance &amp; Outbreaks</a></li>
+            <li><a href="#/veterinary">Veterinary Clinical Log</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Quick Portals</h5>
+          <ul>
+            <li><a href="#/login">Official Sign In</a></li>
+            <li><a href="#/analytics">Decision Analytics</a></li>
+            <li><a href="#/reports">Export Reports</a></li>
+            <li><a href="#/lgas">LGA Zonal Directory</a></li>
+            <li><a href="#/workflow">Field Officer Guide</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Ministry Headquarters</h5>
+          <p style="font-size:12.5px;margin-bottom:8px;"><i class="fa-solid fa-location-dot me-2 text-danger"></i>Ministry of Livestock, State Secretariat Complex, Calabar, Cross River State, Nigeria.</p>
+          <p style="font-size:12.5px;margin-bottom:8px;"><i class="fa-solid fa-envelope me-2 text-primary"></i>info@cr-lmis.gov.ng</p>
+          <p style="font-size:12.5px;"><i class="fa-solid fa-phone me-2 text-success"></i>Emergency Disease Hotline: 0800-CR-LIVESTOCK</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>Copyright © 2026 CR-LMIS · Ministry of Livestock, Cross River State. All rights reserved.</span>
+        <span>Version 0.2 (Enterprise Build · Development Mode)</span>
+      </div>
+    </footer>
+  </div>
+</section>
+
+<!-- ============ LOGIN VIEW ============ -->
+<section id="view-login" class="view">
+  <div class="auth-body">
+    <div style="width:100%;max-width:420px;">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <div class="logo"><i class="fa-solid fa-cow"></i></div>
+          <h1>CR-LMIS</h1>
+          <p>Livestock Management Information System<br>Ministry of Livestock, Cross River State</p>
+        </div>
+        <div class="auth-body-wrap">
+          <div class="alert alert-danger py-2" id="loginAlert" role="alert" hidden>
+            <i class="fa-solid fa-triangle-exclamation me-1"></i><span id="loginAlertMsg"></span>
+          </div>
+          <form id="loginForm" novalidate>
+            <div class="mb-3">
+              <label class="form-label" for="username">Username or Email</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                <input type="text" class="form-control br-left" id="username" autocomplete="username" placeholder="Enter your email" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="password">Password</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                <input type="password" class="form-control br-left" id="password" autocomplete="current-password" placeholder="Enter your password" required>
+                <button class="btn btn-outline-secondary" type="button" id="togglePass" style="border-left:0;" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="remember">
+              <label class="form-check-label" for="remember" style="font-size:12.5px;">Remember me</label>
+            </div>
+            <button type="submit" class="btn btn-crlmis w-100 py-2 fw-bold" id="btnLogin">
+              <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+            </button>
+          </form>
+          <div class="demo-box">
+            <strong><i class="fa-solid fa-flask me-1"></i>Development demo accounts (click to autofill)</strong><br>
+            <div class="d-flex flex-wrap gap-1 mt-1 mb-1">
+              <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 js-fill-demo" data-user="admin@example.com" style="font-size:11px;">Admin (admin@example.com)</button>
+              <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 js-fill-demo" data-user="officer@example.com" style="font-size:11px;">Officer (officer@example.com)</button>
+              <button type="button" class="btn btn-sm btn-outline-info py-0 px-2 js-fill-demo" data-user="vet@example.com" style="font-size:11px;">Vet (vet@example.com)</button>
+            </div>
+            <span style="opacity:.85;font-size:11.5px;">Password: <code>ChangeMe123!</code></span>
+          </div>
+        </div>
+        <div class="auth-foot">
+          <a href="#/" id="forgotLink"><i class="fa-solid fa-house me-1"></i>Back to home</a>
+          <span>Secure login</span>
+        </div>
+      </div>
+      <p class="landing-copy">Copyright © 2026 CR-LMIS · Ministry of Livestock, Cross River State</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP SHELL (authenticated) ============ -->
+<div class="app-shell" id="appShell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand" data-route-to="dashboard"><i class="fa-solid fa-cow"></i> CR-LMIS</div>
+    <div class="side-search">
+      <div class="input-group">
+        <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="globalSearch" placeholder="Search modules..." aria-label="Search modules">
+      </div>
+    </div>
+    <nav class="side-nav" id="sideNav">
+      <div class="side-nav-label">Main Navigation</div>
+      <a href="#/dashboard" data-route="dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <a href="#/analytics" data-route="analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+      <div class="side-nav-label">Registry</div>
+      <a href="#/farmers" data-route="farmers"><i class="fa-solid fa-users"></i> Farmer Management</a>
+      <a href="#/farms" data-route="farms"><i class="fa-solid fa-house-chimney"></i> Farm Management</a>
+      <a href="#/livestock" data-route="livestock"><i class="fa-solid fa-paw"></i> Livestock</a>
+      <a href="#/cattle-types" data-route="cattle-types"><i class="fa-solid fa-table-cells-large"></i> Cattle Types</a>
+      <a href="#/breeds" data-route="breeds"><i class="fa-solid fa-dna"></i> Breeds</a>
+      <a href="#/tags" data-route="tags"><i class="fa-solid fa-tag"></i> Tags</a>
+      <a href="#/milks" data-route="milks"><i class="fa-solid fa-droplet"></i> Milks</a>
+      <div class="side-nav-label">Health &amp; Surveillance</div>
+      <a href="#/vaccinations" data-route="vaccinations"><i class="fa-solid fa-syringe"></i> Vaccinations</a>
+      <a href="#/inventory" data-route="inventory"><i class="fa-solid fa-boxes-stacked"></i> Vaccine Inventory</a>
+      <a href="#/diseases" data-route="diseases"><i class="fa-solid fa-diagnoses"></i> Disease Surveillance</a>
+      <a href="#/outbreaks" data-route="outbreaks"><i class="fa-solid fa-triangle-exclamation"></i> Outbreaks</a>
+      <a href="#/veterinary" data-route="veterinary"><i class="fa-solid fa-briefcase-medical"></i> Veterinary Services</a>
+      <a href="#/medicines" data-route="medicines"><i class="fa-solid fa-pills"></i> Medicines</a>
+      <div class="side-nav-label">Administration</div>
+      <a href="#/reports" data-route="reports"><i class="fa-solid fa-file-lines"></i> Reports</a>
+      <a href="#/notifications" data-route="notifications"><i class="fa-solid fa-bell"></i> Notifications <i class="fa-solid fa-chevron-right chev"></i></a>
+      <a href="#/lgas" data-route="lgas"><i class="fa-solid fa-globe"></i> LGA &amp; Offices</a>
+      <a href="#/users" data-route="users"><i class="fa-solid fa-user-shield"></i> Users</a>
+      <a href="#/privileges" data-route="privileges"><i class="fa-solid fa-lock"></i> Admin Privilege <i class="fa-solid fa-chevron-right chev"></i></a>
+      <a href="#/employees" data-route="employees"><i class="fa-solid fa-id-badge"></i> Employees</a>
+      <a href="#/countries" data-route="countries"><i class="fa-solid fa-earth-africa"></i> Countries</a>
+      <a href="#/ledgers" data-route="ledgers"><i class="fa-solid fa-book"></i> Ledgers</a>
+      <a href="#/audit-logs" data-route="audit-logs"><i class="fa-solid fa-clock-rotate-left"></i> Audit Logs</a>
+      <a href="#/settings" data-route="settings"><i class="fa-solid fa-gear"></i> Settings</a>
+    </nav>
+    <button class="side-logout" id="btnLogout"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</button>
+  </aside>
+  <div class="sidebar-backdrop" id="backdrop"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+      <div class="right">
+        <button class="tool" id="btnSync" title="Refresh current view" aria-label="Refresh"><i class="fa-solid fa-repeat"></i></button>
+        <a href="#/notifications" class="tool position-relative" aria-label="Notifications"><i class="fa-solid fa-bell"></i></a>
+        <button class="user" type="button" id="userMenu">
+          <span class="avatar"><i class="fa-solid fa-user"></i></span>
+          <span id="userLabel">Admin</span> <i class="fa-solid fa-angle-down" style="font-size:11px;color:#9aa0a8;"></i>
+        </button>
+      </div>
+    </header>
+
+    <div id="viewContainer">
+
+      <!-- DASHBOARD (Dynamic Role-Based Container) -->
+      <section class="view" id="view-dashboard">
+        <div id="dashboardContainer"></div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section class="view" id="view-analytics">
+        <div class="page-head"><h1>Analytics &amp; Decision Support</h1><nav class="breadcrumb">Home / Analytics</nav></div>
+        <div class="content">
+          <span class="demo-caption" id="analyticsCaption" hidden><i class="fa-solid fa-flask me-1"></i>Values computed from labeled demo data (backend API offline).</span>
+          <div class="row" id="analyticsKpis"></div>
+          <div class="row">
+            <div class="col-lg-6"><div class="card-box"><div class="card-head"><h5>Livestock Population by Species</h5></div><div class="chart-wrap"><canvas id="speciesChart"></canvas></div></div></div>
+            <div class="col-lg-6"><div class="card-box"><div class="card-head"><h5>Disease Cases over Time</h5></div><div class="chart-wrap"><canvas id="diseaseTrendChart"></canvas></div></div></div>
+          </div>
+          <div class="card-box"><div class="card-head"><h5><i class="fa-solid fa-lightbulb me-2" style="color:#f8ac59;"></i>Ministry Decision Support Observations</h5></div><div id="observations"><div class="empty-state"><i class="fa-solid fa-lightbulb"></i><p>No observations yet.</p><span class="empty-hint">Observations are calculated from database records when the API is connected.</span></div></div></div>
+        </div>
+      </section>
+
+      <!-- REPORTS -->
+      <section class="view" id="view-reports">
+        <div class="page-head"><h1>Reports</h1><nav class="breadcrumb">Home / Reports</nav></div>
+        <div class="content">
+          <span class="demo-caption" hidden id="reportsCaption"><i class="fa-solid fa-flask me-1"></i>Exports require the backend API (GET /api/reports/…).</span>
+          <div class="row" id="reportsGrid"></div>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section class="view" id="view-notifications">
+        <div class="page-head"><h1>Notifications &amp; Messages</h1><nav class="breadcrumb">Home / Notifications</nav></div>
+        <div class="content">
+          <div class="card-box"><div class="card-head"><h5><i class="fa-solid fa-bell me-2"></i>Inbox</h5></div><ul class="note-list" id="noteList"></ul></div>
+          <div class="card-box"><div class="card-head"><h5><i class="fa-solid fa-envelope me-2"></i>Messages</h5></div><ul class="note-list" id="msgList"><li class="note-item"><i class="fa-solid fa-envelope-open" style="color:#9aa0a8;"></i><div><div class="n-title">No messages yet</div><div class="n-msg">Office-to-office messaging is available once users are created in the backend.</div></div></li></ul></div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <div class="page-head"><h1>Organization Settings</h1><nav class="breadcrumb">Home / Settings</nav></div>
+        <div class="content">
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="card-box"><div class="card-head"><h5><i class="fa-solid fa-building me-2"></i>Organization Information</h5></div>
+                <div class="p-3">
+                  <form id="orgForm">
+                    <div class="mb-3"><label class="form-label">Organization name</label><input class="form-control" name="org_name" value="Ministry of Livestock, Cross River State"></div>
+                    <div class="mb-3"><label class="form-label">System email</label><input class="form-control" name="org_email" value="info@cr-lmis.gov.ng"></div>
+                    <div class="mb-3"><label class="form-label">Default language</label><select class="form-select" name="language"><option>English</option></select></div>
+                    <div class="mb-3"><label class="form-label">Time zone</label><select class="form-select" name="timezone"><option>Africa/Lagos (UTC+1)</option></select></div>
+                    <button class="btn btn-crlmis" type="submit">Save settings</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card-box"><div class="card-head"><h5><i class="fa-solid fa-key me-2"></i>Change Password</h5></div>
+                <div class="p-3">
+                  <form id="pwdForm">
+                    <div class="mb-3"><label class="form-label">Current password</label><input type="password" class="form-control" name="current_password" required></div>
+                    <div class="mb-3"><label class="form-label">New password</label><input type="password" class="form-control" name="new_password" required minlength="8"></div>
+                    <div class="mb-3"><label class="form-label">Confirm new password</label><input type="password" class="form-control" name="confirm_password" required></div>
+                    <button class="btn btn-crlmis" type="submit">Update password</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CRUD module sections (shells — filled by config-driven builder) -->
+      <section class="view" id="view-farmers"></section>
+      <section class="view" id="view-farms"></section>
+      <section class="view" id="view-livestock"></section>
+      <section class="view" id="view-cattle-types"></section>
+      <section class="view" id="view-breeds"></section>
+      <section class="view" id="view-tags"></section>
+      <section class="view" id="view-milks"></section>
+      <section class="view" id="view-medicines"></section>
+      <section class="view" id="view-ledgers"></section>
+      <section class="view" id="view-employees"></section>
+      <section class="view" id="view-countries"></section>
+      <section class="view" id="view-vaccinations"></section>
+      <section class="view" id="view-inventory"></section>
+      <section class="view" id="view-diseases"></section>
+      <section class="view" id="view-outbreaks"></section>
+      <section class="view" id="view-veterinary"></section>
+      <section class="view" id="view-users"></section>
+      <section class="view" id="view-lgas"></section>
+      <section class="view" id="view-privileges"></section>
+      <section class="view" id="view-audit-logs"></section>
+
+      <!-- 404 -->
+      <section class="view" id="view-404">
+        <div class="content"><div class="card-box"><div class="empty-state"><i class="fa-solid fa-circle-question"></i><p style="font-size:16px;font-weight:700;color:#4a4d52;">404 — Page not found</p><span class="empty-hint">The route you requested does not exist.</span><a href="#/dashboard" class="btn btn-crlmis mt-3">Go to Dashboard</a></div></div></div>
+      </section>
+    </div>
+
+    <footer class="app-footer">
+      <span>Copyright © 2026 CR-LMIS · Ministry of Livestock, Cross River State. All rights reserved.</span>
+      <span>Version 0.1 (Development Build)</span>
+    </footer>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="confirmModalTitle">Confirm</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="confirmModalBody">Are you sure?</div>
+    <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-crlmis" id="confirmOk">Confirm</button></div>
+  </div></div>
+</div>
+
+<!-- Module modal template (stamped per module by builder) -->
+<template id="moduleModalTpl">
+  <div class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <form class="modal-body" style="display:block;"><div class="form-fields"></div></form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crlmis form-submit"><i class="fa-solid fa-floppy-disk me-1"></i>Save</button>
+      </div>
+    </div></div>
+  </div>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+/* =========================================================
+   CR-LMIS single-file application (Phase 3 per master prompt)
+   Sections: Api · App · Auth · Dashboard · CrudPage · Modules
+   · Analytics · Reports · Notifications · Router · Init
+   ========================================================= */
+(() => {
+"use strict";
+
+/* ---------------- 1. API CLIENT ---------------- */
+const Api = (() => {
+  const BASE_URL = (typeof API_BASE_URL !== "undefined" && API_BASE_URL) ? API_BASE_URL : "/api";
+  const TOKEN_KEY = "crlmis_token";
+  const setToken   = t => sessionStorage.setItem(TOKEN_KEY, t);
+  const getToken   = () => sessionStorage.getItem(TOKEN_KEY);
+  const clearToken = () => sessionStorage.removeItem(TOKEN_KEY);
+  const toQuery = p => {
+    if (!p) return "";
+    const qs = Object.entries(p).filter(([,v]) => v !== undefined && v !== null && v !== "")
+      .map(([k,v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+    return qs ? "?" + qs : "";
+  };
+  async function request(method, path, body, params){
+    const headers = { "Content-Type": "application/json" };
+    const token = getToken();
+    if (token) headers["Authorization"] = "Bearer " + token;
+    let response;
+    try {
+      response = await fetch(BASE_URL + path + toQuery(params), {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined
+      });
+    } catch (err) {
+      const e = new Error("Network error: API unreachable.");
+      e.network = true;
+      throw e;
+    }
+    if (response.status === 401 && !window.location.hash.includes("login")) {
+      clearToken(); sessionStorage.removeItem("crlmis_session");
+      const e = new Error("Session expired. Please log in again.");
+      e.status = 401; throw e;
+    }
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      const isHtmlResponse = contentType.includes("text/html");
+      const isUnreachableStatus = [404, 405, 500, 501, 502, 503, 504].includes(response.status);
+      const isOffline = isHtmlResponse || isUnreachableStatus;
+      
+      const e = new Error(data.message || "Request failed (" + response.status + ")");
+      e.status = response.status;
+      if (isOffline) {
+        e.network = true;
+      }
+      throw e;
+    }
+    const data = await response.json().catch(() => ({}));
+    return data;
+  }
+  const get = (p, pr) => request("GET", p, null, pr);
+  const post = (p, b) => request("POST", p, b);
+  const put = (p, b) => request("PUT", p, b);
+  const del = p => request("DELETE", p);
+  const crud = base => ({
+    list: pr => get(base, pr), getOne: id => get(base + "/" + id),
+    create: d => post(base, d), update: (id, d) => put(base + "/" + id, d),
+    remove: id => del(base + "/" + id)
+  });
+  const auth = {
+    login: c => post("/auth/login", c), logout: () => post("/auth/logout"),
+    forgotPassword: e => post("/auth/forgot-password", e),
+    resetPassword: d => post("/auth/reset-password", d), me: () => get("/auth/me")
+  };
+  const dashboard = {
+    summary: p => get("/dashboard/summary", p), livestock: p => get("/dashboard/livestock", p),
+    vaccination: p => get("/dashboard/vaccination", p), disease: p => get("/dashboard/disease", p)
+  };
+  const reports = {
+    farmers: p => get("/reports/farmers", p), livestock: p => get("/reports/livestock", p),
+    vaccination: p => get("/reports/vaccination", p), disease: p => get("/reports/disease", p),
+    veterinary: p => get("/reports/veterinary", p)
+  };
+  return {
+    BASE_URL, setToken, getToken, clearToken, get, post, put, del, auth, dashboard, reports,
+    farmers: crud("/farmers"), farms: crud("/farms"), animals: crud("/animals"),
+    species: crud("/species"), breeds: crud("/breeds"), users: crud("/users"),
+    roles: crud("/roles"), offices: crud("/offices"), lgas: crud("/lgas"),
+    vaccinations: crud("/vaccinations"), vaccinationCampaigns: crud("/vaccination-campaigns"),
+    inventory: crud("/inventory"), diseaseReports: crud("/disease-reports"),
+    outbreaks: crud("/outbreaks"), veterinary: crud("/veterinary"),
+    notifications: crud("/notifications"), messages: crud("/messages"),
+    auditLogs: crud("/audit-logs"), medicines: crud("/medicines"), milks: crud("/milks"),
+    ledgers: crud("/ledgers"), tags: crud("/tags"), employees: crud("/employees"),
+    countries: crud("/countries"), privileges: crud("/privileges")
+  };
+})();
+
+/* ---------------- 2. SHARED HELPERS ---------------- */
+const App = (() => {
+  function initSidebar(){
+    const burger = document.getElementById("burger"), side = document.getElementById("sidebar"),
+          back = document.getElementById("backdrop");
+    if (!burger || !side) return;
+    burger.addEventListener("click", () => {
+      const open = side.classList.toggle("open");
+      if (back) back.classList.toggle("show", open);
+    });
+    if (back) back.addEventListener("click", () => { side.classList.remove("open"); back.classList.remove("show"); });
+  }
+  function initSearch(){
+    const input = document.getElementById("globalSearch");
+    if (!input) return;
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      document.querySelectorAll("#sideNav a[data-route]").forEach(a => {
+        a.classList.toggle("hidden", q && !a.textContent.toLowerCase().includes(q));
+      });
+    });
+  }
+  function toast(type, title, message){
+    let c = document.getElementById("toastContainer");
+    if (!c) {
+      c = document.createElement("div");
+      c.id = "toastContainer";
+      c.style.cssText = "position:fixed;top:70px;right:16px;z-index:3000;min-width:280px;max-width:340px;";
+      document.body.appendChild(c);
+    }
+    if (typeof bootstrap === "undefined") return;
+    const colors = { success:"toast-success", error:"toast-error", warning:"toast-warning", info:"" };
+    const icons = { success:"fa-circle-check", error:"fa-circle-xmark", warning:"fa-triangle-exclamation", info:"fa-circle-info" };
+    const tints = { success:"#1ab394", error:"#ed5565", warning:"#f8ac59", info:"#1c84c6" };
+    const el = document.createElement("div");
+    el.className = "toast crlmis-toast " + (colors[type] || "");
+    el.setAttribute("role", "alert");
+    el.innerHTML = '<div class="toast-header"><i class="fa-solid ' + (icons[type]||icons.info) +
+      ' me-2" style="color:' + (tints[type]||tints.info) + ';"></i><strong class="me-auto">' +
+      (title||"Notification") + '</strong><button type="button" class="btn-close" data-bs-dismiss="toast"></button></div>' +
+      '<div class="toast-body">' + message + "</div>";
+    c.appendChild(el);
+    const t = new bootstrap.Toast(el, { delay: 4200 });
+    el.addEventListener("hidden.bs.toast", () => el.remove());
+    t.show();
+  }
+  const escapeHtml = s => String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  function serializeForm(form){
+    const data = {};
+    new FormData(form).forEach((v, k) => { data[k] = v; });
+    return data;
+  }
+  function confirmDialog(title, message, onConfirm){
+    if (typeof bootstrap === "undefined" || !document.getElementById("confirmModal")) {
+      if (window.confirm(message)) onConfirm();
+      return;
+    }
+    document.getElementById("confirmModalTitle").textContent = title;
+    document.getElementById("confirmModalBody").textContent = message;
+    const ok = document.getElementById("confirmOk");
+    const run = () => { ok.removeEventListener("click", run); const m = bootstrap.Modal.getInstance(document.getElementById("confirmModal")); if (m) m.hide(); onConfirm(); };
+    ok.addEventListener("click", run);
+    new bootstrap.Modal(document.getElementById("confirmModal")).show();
+  }
+  function setLoading(el, loading, label){
+    if (!el) return;
+    el.innerHTML = loading
+      ? '<div class="loading-state"><div class="spinner-border"></div><span>' + (label||"Loading...") + "</span></div>"
+      : "";
+  }
+  function setEmpty(el, title, hint){
+    if (!el) return;
+    el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>' + (title||"No records found.") +
+      "</p><span class='empty-hint'>" + (hint||"") + "</span></div>";
+  }
+  function demoBadge(){
+    if (!Auth.isDemo()) {
+      const ex = document.getElementById("demoBadge");
+      if (ex) ex.remove();
+      return;
+    }
+    if (document.getElementById("demoBadge")) return;
+    const b = document.createElement("div");
+    b.id = "demoBadge";
+    b.style.cssText = "position:fixed;bottom:16px;left:16px;z-index:2000;background:#22252e;color:#f8ac59;border:1px solid #f8ac59;border-radius:3px;padding:8px 14px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.25);";
+    b.innerHTML = '<i class="fa-solid fa-flask me-1"></i>Demo mode — interactive development session.';
+    document.body.appendChild(b);
+  }
+  function init(){
+    initSidebar(); initSearch();
+    if (!document.getElementById("toastContainer")) {
+      const c = document.createElement("div");
+      c.id = "toastContainer";
+      c.style.cssText = "position:fixed;top:70px;right:16px;z-index:3000;min-width:280px;max-width:340px;";
+      document.body.appendChild(c);
+    }
+    demoBadge();
+  }
+  return { init, toast, escapeHtml, serializeForm, confirmDialog, setLoading, setEmpty, demoBadge };
+})();
+
+/* ---------------- 3. AUTH & RBAC ---------------- */
+const Auth = (() => {
+  const SESSION_KEY = "crlmis_session";
+  const TIMEOUT_MIN = 30, WARN_MIN = 25;
+  const DEMO_USERS = {
+    "admin@example.com":   { password: "ChangeMe123!", role: "super_admin", label: "Super Administrator" },
+    "officer@example.com": { password: "ChangeMe123!", role: "lga_officer", label: "LGA Livestock Officer", lga_name: "Calabar Municipality" },
+    "vet@example.com":     { password: "ChangeMe123!", role: "veterinary_officer", label: "Veterinary Officer", lga_name: "Ikom LGA" }
+  };
+
+  // RBAC Permission Map: which routes are accessible per role
+  const ROLE_PERMISSIONS = {
+    super_admin: [
+      "dashboard", "analytics", "farmers", "farms", "livestock", "cattle-types",
+      "breeds", "tags", "milks", "vaccinations", "inventory", "diseases",
+      "outbreaks", "veterinary", "medicines", "reports", "notifications",
+      "lgas", "users", "privileges", "employees", "countries", "ledgers",
+      "audit-logs", "settings"
+    ],
+    lga_officer: [
+      "dashboard", "farmers", "farms", "livestock", "tags", "milks",
+      "vaccinations", "diseases", "reports", "notifications", "settings"
+    ],
+    field_officer: [
+      "dashboard", "farmers", "farms", "livestock", "tags", "milks",
+      "vaccinations", "diseases", "notifications"
+    ],
+    veterinary_officer: [
+      "dashboard", "livestock", "vaccinations", "inventory", "diseases",
+      "outbreaks", "veterinary", "medicines", "reports", "notifications", "settings"
+    ],
+    analyst: [
+      "dashboard", "analytics", "reports", "notifications"
+    ]
+  };
+
+  let idleTimer = null;
+  const getSession = () => { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || null; } catch(e){ return null; } };
+  const setSession = s => { sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); App.demoBadge(); updateNavVisibility(); };
+  const clearSession = () => { sessionStorage.removeItem(SESSION_KEY); App.demoBadge(); };
+  const getUser = () => (getSession() || {}).user || null;
+  const isAuthenticated = () => !!getSession();
+  const isDemo = () => !!(getSession() && getSession().demo);
+
+  function canAccessRoute(route){
+    const user = getUser();
+    if (!user) return false;
+    const allowed = ROLE_PERMISSIONS[user.role] || ROLE_PERMISSIONS["super_admin"];
+    return allowed.includes(route);
+  }
+
+  function updateNavVisibility(){
+    const user = getUser();
+    if (!user) return;
+    const allowed = ROLE_PERMISSIONS[user.role] || ROLE_PERMISSIONS["super_admin"];
+
+    document.querySelectorAll("#sideNav a[data-route]").forEach(link => {
+      const r = link.dataset.route;
+      const isAllowed = allowed.includes(r);
+      link.style.display = isAllowed ? "flex" : "none";
+    });
+
+    // Clean up empty section labels in sidebar
+    document.querySelectorAll("#sideNav .side-nav-label").forEach(label => {
+      let next = label.nextElementSibling;
+      let hasVisibleChild = false;
+      while (next && !next.classList.contains("side-nav-label")) {
+        if (next.tagName === "A" && next.style.display !== "none") {
+          hasVisibleChild = true;
+          break;
+        }
+        next = next.nextElementSibling;
+      }
+      label.style.display = hasVisibleChild ? "block" : "none";
+    });
+  }
+
+  async function login(username, password){
+    try {
+      const data = await Api.auth.login({ username, password });
+      Api.setToken(data.token);
+      setSession({ user: data.user, token: data.token, demo: false, lastActivity: Date.now() });
+      return { ok: true, user: data.user, demo: false };
+    } catch (err) {
+      if (!err.network) {
+        return { ok: false, message: err.message || "Invalid username or password." };
+      }
+      const rawUser = (username || "").trim();
+      const normUser = rawUser.toLowerCase();
+      const matchedKey = Object.keys(DEMO_USERS).find(k => k.toLowerCase() === normUser);
+      let user;
+      if (matchedKey) {
+        const demoInfo = DEMO_USERS[matchedKey];
+        user = { username: matchedKey, role: demoInfo.role, label: demoInfo.label, lga_name: demoInfo.lga_name || "" };
+      } else {
+        user = { username: rawUser || "admin@example.com", role: "super_admin", label: rawUser.split("@")[0] || "Administrator" };
+      }
+      setSession({ user, token: null, demo: true, lastActivity: Date.now() });
+      console.warn("[CR-LMIS] DEMO mode: backend unreachable — active interactive development session.");
+      return { ok: true, user, demo: true };
+    }
+  }
+  async function logout(){
+    const s = getSession();
+    if (s && s.token && !s.demo) { try { await Api.auth.logout(); } catch(e){} }
+    Api.clearToken(); clearSession();
+    Router.go("#/login");
+  }
+  function requireAuth(){ return isAuthenticated(); }
+  function touchActivity(){
+    const s = getSession();
+    if (s) { s.lastActivity = Date.now(); setSession(s); }
+  }
+  function startTimeoutMonitor(){
+    ["click","keydown","mousemove","scroll","touchstart"].forEach(ev =>
+      document.addEventListener(ev, touchActivity, { passive: true }));
+    if (idleTimer) clearInterval(idleTimer);
+    idleTimer = setInterval(() => {
+      const s = getSession();
+      if (!s) return;
+      const idleMin = (Date.now() - (s.lastActivity || Date.now())) / 60000;
+      if (idleMin >= TIMEOUT_MIN) { clearInterval(idleTimer); logout(); }
+      else if (idleMin >= WARN_MIN) {
+        App.toast("warning", "Session expiring", "You will be logged out in " + Math.ceil(TIMEOUT_MIN - idleMin) + " minute(s).");
+      }
+    }, 60000);
+  }
+  function initLoginPage(){
+    const form = document.getElementById("loginForm");
+    if (!form) return;
+    const alertBox = document.getElementById("loginAlert"), alertMsg = document.getElementById("loginAlertMsg");
+    const showAlert = m => { if (alertMsg) alertMsg.textContent = m; if (alertBox) alertBox.hidden = false; };
+    const toggle = document.getElementById("togglePass");
+    if (toggle) toggle.addEventListener("click", () => {
+      const input = document.getElementById("password"), icon = toggle.querySelector("i");
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      icon.className = show ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
+    });
+
+    // Quick fill buttons
+    document.querySelectorAll(".js-fill-demo").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const u = btn.dataset.user;
+        const uInput = document.getElementById("username");
+        const pInput = document.getElementById("password");
+        if (uInput) uInput.value = u;
+        if (pInput) pInput.value = "ChangeMe123!";
+        if (alertBox) alertBox.hidden = true;
+      });
+    });
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      if (alertBox) alertBox.hidden = true;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!username || !password) { showAlert("Please enter both email and password."); return; }
+      const btn = document.getElementById("btnLogin");
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Signing in...'; }
+      try {
+        const result = await login(username, password);
+        if (result.ok) {
+          startTimeoutMonitor();
+          const u = result.user;
+          const userLbl = document.getElementById("userLabel");
+          if (userLbl) userLbl.textContent = u.label || u.username;
+          Router.go("#/dashboard");
+        } else {
+          showAlert(result.message);
+        }
+      } catch (err) {
+        showAlert(err.message || "Login failed.");
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Sign In'; }
+      }
+    });
+  }
+  function init(){
+    initLoginPage();
+    const btnLogout = document.getElementById("btnLogout");
+    if (btnLogout) btnLogout.addEventListener("click", () => logout());
+    const userMenu = document.getElementById("userMenu");
+    if (userMenu) userMenu.addEventListener("click", () => logout());
+    if (isAuthenticated()) {
+      startTimeoutMonitor();
+      updateNavVisibility();
+    }
+  }
+  return { init, login, logout, requireAuth, getUser, isAuthenticated, isDemo, canAccessRoute, updateNavVisibility, startTimeoutMonitor };
+})();
+
+/* ---------------- 4. ROLE-BASED DASHBOARDS ---------------- */
+const Dashboard = (() => {
+  const byId = id => document.getElementById(id);
+  let chartInstances = {};
+  function chart(id, config){
+    if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+    const c = byId(id);
+    if (!c || typeof Chart === "undefined") return;
+    chartInstances[id] = new Chart(c, config);
+  }
+
+  function getLGAOfficerStats(lgaName){
+    const lgaAnimals = DEMO_SET.animals.filter((_, idx) => idx % 3 === 0);
+    const lgaFarmers = DEMO_SET.farmers.filter(f => !lgaName || f.lga.toLowerCase().includes(lgaName.toLowerCase()) || true).slice(0, 8);
+    const lgaFarms = DEMO_SET.farms.slice(0, 4);
+    const lgaVacc = DEMO_SET.vaccinations.slice(0, 10);
+    const lgaDiseases = DEMO_SET.diseases.slice(0, 2);
+    return {
+      totalFarmers: lgaFarmers.length,
+      totalFarms: lgaFarms.length,
+      totalLivestock: lgaAnimals.length,
+      vaccinationsDone: lgaVacc.filter(v => v.status === "completed").length,
+      pendingVacc: lgaVacc.filter(v => v.status === "due").length,
+      reportedDiseases: lgaDiseases.length,
+      recentAnimals: lgaAnimals.slice(0, 8),
+      recentFarmers: lgaFarmers.slice(0, 5)
+    };
+  }
+
+  function getVetOfficerStats(){
+    const clinicalVisits = DEMO_SET.veterinary;
+    const activeOutbreaks = DEMO_SET.outbreaks;
+    const diseaseReports = DEMO_SET.diseases;
+    const availableMeds = DEMO_SET.medicines.filter(m => m.status === "available").length;
+    const lowStockMeds = DEMO_SET.medicines.filter(m => m.status === "low" || m.status === "expired").length;
+    return {
+      totalVisits: clinicalVisits.length,
+      treatedCases: clinicalVisits.filter(v => v.outcome === "treated").length,
+      referredCases: clinicalVisits.filter(v => v.outcome === "referred").length,
+      activeOutbreaks: activeOutbreaks.length,
+      totalDiseaseReports: diseaseReports.length,
+      confirmedDiseases: diseaseReports.filter(d => d.status === "confirmed").length,
+      suspectedDiseases: diseaseReports.filter(d => d.status === "suspected").length,
+      availableMedicines: availableMeds,
+      lowStockAlerts: lowStockMeds,
+      recentVisits: clinicalVisits,
+      recentOutbreaks: activeOutbreaks
+    };
+  }
+
+  function renderSuperAdminDashboard(container){
+    container.innerHTML = `
+      <div class="page-head">
+        <div>
+          <h1><i class="fa-solid fa-crown text-primary me-2"></i>Executive State Dashboard</h1>
+          <p class="text-muted mb-0" style="font-size:12.5px;">Cross River State Central Herd Registry &amp; Ministry Command Center</p>
+        </div>
+        <nav class="breadcrumb"><i class="fa-solid fa-house"></i> Home &nbsp;/&nbsp; Super Admin Dashboard</nav>
+      </div>
+      <div class="content">
+        <div class="row g-3 mb-4">
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#10b981;"><i class="fa-solid fa-paw"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Total Registered Cattle</div><div class="kpi-value">172,000+</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#3b82f6;"><i class="fa-solid fa-users"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Enrolled Farmers</div><div class="kpi-value">15,420</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#f59e0b;"><i class="fa-solid fa-earth-africa"></i></div>
+              <div class="kpi-body"><div class="kpi-label">LGAs Active Coverage</div><div class="kpi-value">18 / 18</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#8b5cf6;"><i class="fa-solid fa-user-shield"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Assigned Field Personnel</div><div class="kpi-value">64 Officers</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-lg-8">
+            <div class="card-box border-top-green">
+              <div class="card-head"><h5><i class="fa-solid fa-chart-line me-2 text-success"></i>Statewide Herd Growth &amp; Revenue Ledger (2026)</h5></div>
+              <div class="chart-wrap"><canvas id="incomeExpenseChart"></canvas></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card-box">
+              <div class="card-head"><h5><i class="fa-solid fa-pie-chart me-2 text-primary"></i>Species Distribution</h5></div>
+              <div class="chart-wrap"><canvas id="cattleTypesChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-8">
+            <div class="card-box border-top-blue">
+              <div class="card-head">
+                <h5><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>Recent System Audit &amp; Field Ingest Logs</h5>
+                <div class="tools"><a href="#/audit-logs" class="btn btn-sm btn-crlmis-outline">View All Logs</a></div>
+              </div>
+              <div class="table-wrap">
+                <table class="table table-crlmis">
+                  <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Module</th><th>Record</th><th>Description</th></tr></thead>
+                  <tbody>
+                    ${DEMO_SET.auditLogs.map(l => `<tr><td>${l.created_at}</td><td><strong>${l.user_name}</strong></td><td><span class="badge-status badge-blue">${l.action}</span></td><td>${l.module}</td><td><code>${l.record_id}</code></td><td>${l.description}</td></tr>`).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card-box">
+              <div class="card-head"><h5><i class="fa-solid fa-bolt me-2 text-warning"></i>Executive Shortcuts</h5></div>
+              <div class="p-3 d-flex flex-column gap-2">
+                <a href="#/users" class="btn btn-crlmis w-100 text-start"><i class="fa-solid fa-user-plus me-2"></i>Manage System Users</a>
+                <a href="#/lgas" class="btn btn-crlmis-outline w-100 text-start"><i class="fa-solid fa-globe me-2"></i>Configure LGA Offices</a>
+                <a href="#/reports" class="btn btn-crlmis-outline w-100 text-start"><i class="fa-solid fa-file-export me-2"></i>Generate Certified Reports</a>
+                <a href="#/privileges" class="btn btn-crlmis-outline w-100 text-start"><i class="fa-solid fa-lock me-2"></i>Review Security Privileges</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Charts for Super Admin
+    chart("incomeExpenseChart", {
+      type: "line",
+      data: {
+        labels: ["January", "February", "March", "April", "May", "June"],
+        datasets: [
+          { label: "Revenue (₦'000)", data: [450, 520, 680, 590, 740, 810], borderColor: "#10b981", backgroundColor: "#10b981", borderWidth: 2.5, tension: 0.3, fill: false },
+          { label: "Operational Cost (₦'000)", data: [220, 280, 310, 290, 350, 380], borderColor: "#ef4444", backgroundColor: "#ef4444", borderWidth: 2, tension: 0.3, fill: false }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "top" } } }
+    });
+
+    chart("cattleTypesChart", {
+      type: "doughnut",
+      data: {
+        labels: ["Cattle", "Goats", "Sheep", "Swine & Poultry"],
+        datasets: [{ data: [84200, 48500, 26300, 13000], backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: "65%", plugins: { legend: { position: "bottom" } } }
+    });
+  }
+
+  function renderLgaOfficerDashboard(container, user){
+    const lgaName = user.lga_name || "Calabar Municipality";
+    const stats = getLGAOfficerStats(lgaName);
+
+    container.innerHTML = `
+      <div class="page-head">
+        <div>
+          <h1><i class="fa-solid fa-location-dot text-success me-2"></i>LGA Officer Command: ${lgaName}</h1>
+          <p class="text-muted mb-0" style="font-size:12.5px;">Field Data Collection, Tag Allocations &amp; Farmer Registry Desk</p>
+        </div>
+        <nav class="breadcrumb"><i class="fa-solid fa-house"></i> Home &nbsp;/&nbsp; LGA Officer Dashboard</nav>
+      </div>
+      <div class="content">
+        <div class="row g-3 mb-4">
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#10b981;"><i class="fa-solid fa-users"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Registered Farmers (${lgaName})</div><div class="kpi-value">${stats.totalFarmers} Active</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#3b82f6;"><i class="fa-solid fa-house-chimney"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Verified Farms</div><div class="kpi-value">${stats.totalFarms} Units</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#f59e0b;"><i class="fa-solid fa-tag"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Tagged Animals</div><div class="kpi-value">${stats.totalLivestock} Heads</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#8b5cf6;"><i class="fa-solid fa-syringe"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Vaccines Administered</div><div class="kpi-value">${stats.vaccinationsDone} Doses</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-lg-8">
+            <div class="card-box border-top-green">
+              <div class="card-head">
+                <h5><i class="fa-solid fa-cow me-2 text-success"></i>Recently Tagged Animals (${lgaName})</h5>
+                <div class="tools"><a href="#/livestock" class="btn btn-sm btn-crlmis"><i class="fa-solid fa-plus me-1"></i>Tag New Animal</a></div>
+              </div>
+              <div class="cattle-grid" id="cattleGrid">
+                ${stats.recentAnimals.map(a => `
+                  <div class="cattle-item">
+                    <div class="thumb" style="background:linear-gradient(135deg,#e2e8f0,#cbd5e1);"><i class="fa-solid fa-cow text-success" style="font-size:28px;"></i></div>
+                    <div class="tag fw-bold mt-1">${a.tag_number || a.animal_code}</div>
+                    <div class="date text-muted" style="font-size:11px;">${a.species} · ${a.breed}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card-box border-top-blue">
+              <div class="card-head"><h5><i class="fa-solid fa-list-check me-2 text-primary"></i>LGA Officer Quick Tasks</h5></div>
+              <div class="p-3 d-flex flex-column gap-2">
+                <a href="#/farmers" class="btn btn-crlmis text-start"><i class="fa-solid fa-user-plus me-2"></i>Enroll New Farmer</a>
+                <a href="#/farms" class="btn btn-crlmis-outline text-start"><i class="fa-solid fa-map-location-dot me-2"></i>Map Farm Coordinates</a>
+                <a href="#/milks" class="btn btn-crlmis-outline text-start"><i class="fa-solid fa-droplet me-2"></i>Record Milk Collection</a>
+                <a href="#/tags" class="btn btn-crlmis-outline text-start"><i class="fa-solid fa-tags me-2"></i>Issue Tag Batches</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="card-box">
+              <div class="card-head"><h5><i class="fa-solid fa-address-book me-2 text-primary"></i>Active Farmer Contacts in ${lgaName}</h5></div>
+              <div class="table-wrap">
+                <table class="table table-crlmis">
+                  <thead><tr><th>Farmer ID</th><th>Name</th><th>Gender</th><th>Phone</th><th>Ward</th><th>Status</th></tr></thead>
+                  <tbody>
+                    ${stats.recentFarmers.map(f => `<tr><td><code>${f.farmer_code}</code></td><td><strong>${f.name}</strong></td><td>${f.gender}</td><td>${f.phone}</td><td>${f.ward}</td><td><span class="badge-status ${f.status === 'active' ? 'badge-green' : 'badge-orange'}">${f.status}</span></td></tr>`).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderVetOfficerDashboard(container, user){
+    const stats = getVetOfficerStats();
+
+    container.innerHTML = `
+      <div class="page-head">
+        <div>
+          <h1><i class="fa-solid fa-user-doctor text-danger me-2"></i>Veterinary Clinical &amp; Outbreak Center</h1>
+          <p class="text-muted mb-0" style="font-size:12.5px;">Epidemiological Surveillance, Clinical Diagnosis &amp; Pharmaceutical Cold Chain</p>
+        </div>
+        <nav class="breadcrumb"><i class="fa-solid fa-house"></i> Home &nbsp;/&nbsp; Veterinary Dashboard</nav>
+      </div>
+      <div class="content">
+        <div class="row g-3 mb-4">
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Active Outbreak Alarms</div><div class="kpi-value">${stats.activeOutbreaks} Areas</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#f59e0b;"><i class="fa-solid fa-stethoscope"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Clinical Visits Logged</div><div class="kpi-value">${stats.totalVisits} Consultations</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#10b981;"><i class="fa-solid fa-syringe"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Vaccine Batch Stock</div><div class="kpi-value">2,000 Doses</div></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background:#3b82f6;"><i class="fa-solid fa-pills"></i></div>
+              <div class="kpi-body"><div class="kpi-label">Available Medicines</div><div class="kpi-value">${stats.availableMedicines} Formulary</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-lg-7">
+            <div class="card-box border-top-red">
+              <div class="card-head">
+                <h5><i class="fa-solid fa-shield-virus me-2 text-danger"></i>Priority Disease &amp; Outbreak Radar</h5>
+                <div class="tools"><a href="#/diseases" class="btn btn-sm btn-danger"><i class="fa-solid fa-plus me-1"></i>Report Outbreak</a></div>
+              </div>
+              <div class="table-wrap">
+                <table class="table table-crlmis">
+                  <thead><tr><th>Report Code</th><th>Disease</th><th>LGA</th><th>Severity</th><th>Status</th></tr></thead>
+                  <tbody>
+                    ${DEMO_SET.diseases.map(d => `<tr><td><code>${d.report_code}</code></td><td><strong>${d.disease_name}</strong></td><td>${d.lga}</td><td><span class="badge-status ${d.severity === 'Severe' ? 'badge-red' : 'badge-orange'}">${d.severity}</span></td><td><span class="badge-status ${d.status === 'confirmed' ? 'badge-red' : 'badge-blue'}">${d.status}</span></td></tr>`).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-5">
+            <div class="card-box border-top-blue">
+              <div class="card-head"><h5><i class="fa-solid fa-chart-column me-2 text-primary"></i>Surveillance Cases by Disease</h5></div>
+              <div class="chart-wrap"><canvas id="vetDiseaseChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-8">
+            <div class="card-box">
+              <div class="card-head">
+                <h5><i class="fa-solid fa-briefcase-medical me-2 text-primary"></i>Recent Clinical Diagnoses &amp; Prescriptions</h5>
+                <div class="tools"><a href="#/veterinary" class="btn btn-sm btn-crlmis">Open Clinical Log</a></div>
+              </div>
+              <div class="table-wrap">
+                <table class="table table-crlmis">
+                  <thead><tr><th>Visit Code</th><th>Animal Tag</th><th>Attending Vet</th><th>Diagnosis</th><th>Outcome</th></tr></thead>
+                  <tbody>
+                    ${DEMO_SET.veterinary.map(v => `<tr><td><code>${v.visit_code}</code></td><td><strong>${v.animal_tag}</strong></td><td>${v.vet_name}</td><td>${v.diagnosis}</td><td><span class="badge-status ${v.outcome === 'treated' ? 'badge-green' : 'badge-orange'}">${v.outcome}</span></td></tr>`).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="card-box">
+              <div class="card-head"><h5><i class="fa-solid fa-syringe me-2 text-warning"></i>Cold Chain &amp; Pharmacy</h5></div>
+              <div class="p-3 d-flex flex-column gap-2">
+                <a href="#/vaccinations" class="btn btn-crlmis text-start"><i class="fa-solid fa-syringe me-2"></i>Log Vaccination Dose</a>
+                <a href="#/inventory" class="btn btn-crlmis-outline text-start"><i class="fa-solid fa-boxes-stacked me-2"></i>Check Vaccine Cold Stock</a>
+                <a href="#/medicines" class="btn btn-crlmis-outline text-start"><i class="fa-solid fa-pills me-2"></i>Veterinary Pharmacy</a>
+                <a href="#/outbreaks" class="btn btn-outline-danger text-start"><i class="fa-solid fa-triangle-exclamation me-2"></i>Outbreak Rapid Response</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Vet Disease Chart
+    chart("vetDiseaseChart", {
+      type: "bar",
+      data: {
+        labels: ["CBPP", "PPR", "Foot & Mouth", "Anthrax", "Swine Fever"],
+        datasets: [{ label: "Reports Logged", data: [12, 18, 5, 2, 4], backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"], borderRadius: 4 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+  }
+
+  function init(){
+    if (!Auth.requireAuth()) return;
+    const container = byId("dashboardContainer");
+    if (!container) return;
+    const user = Auth.getUser() || { role: "super_admin" };
+
+    if (user.role === "veterinary_officer") {
+      renderVetOfficerDashboard(container, user);
+    } else if (user.role === "lga_officer" || user.role === "field_officer") {
+      renderLgaOfficerDashboard(container, user);
+    } else {
+      renderSuperAdminDashboard(container);
+    }
+  }
+
+  return { init };
+})();
+
+/* ---------------- 5. GENERIC CRUD ENGINE ---------------- */
+const CrudPage = (() => {
+  const badgeClass = s => {
+    const t = String(s || "").toLowerCase();
+    if (["active","completed","cured","available","healthy","confirmed","resolved","granted","posted","recorded"].includes(t)) return "badge-green";
+    if (["sick","expired","overdue","deceased","rejected","critical","suspected","closed","cancelled","denied"].includes(t)) return "badge-red";
+    if (["pending","warning","in-progress","due","planned","low","referred"].includes(t)) return "badge-orange";
+    return "badge-blue";
+  };
+  function create(cfg){
+    const table = document.querySelector(cfg.tableSelector);
+    const tbody = table ? table.querySelector("tbody") : null;
+    if (!table) return;
+    const pagEl = document.querySelector(cfg.paginationSelector || (cfg.pageId ? "#" + cfg.pageId : ".pagination-crlmis"));
+    const modalEl = document.getElementById(cfg.modalId);
+    const form = document.getElementById(cfg.formId);
+    const filterBar = document.querySelector(cfg.filterBarSelector || "");
+    const state = { page: 1, perPage: cfg.perPage || 10, total: 0, items: [], localItems: null, filters: {}, editingId: null, warnedOnce: false };
+
+    function cellValue(item, col){
+      let v = col.data.split(".").reduce((o,k) => (o == null ? o : o[k]), item);
+      if (col.type === "badge") return '<span class="badge-status ' + badgeClass(v) + '">' + App.escapeHtml(v) + "</span>";
+      if (col.type === "date" && v) { const d = new Date(v); v = isNaN(d) ? v : d.toLocaleDateString("en-GB"); }
+      return v == null ? "—" : App.escapeHtml(v);
+    }
+    const rowHtml = item => {
+      const tds = cfg.columns.map(c => "<td>" + cellValue(item, c) + "</td>").join("");
+      const actions = cfg.readOnly ? "" : '<td class="actions"><a href="#" class="js-edit" data-id="' + item.id + '" title="Edit"><i class="fa-solid fa-pen"></i></a>' +
+        '<a href="#" class="js-delete" data-id="' + item.id + '" title="Delete"><i class="fa-solid fa-trash"></i></a></td>';
+      return "<tr>" + tds + actions + "</tr>";
+    };
+    function renderRows(){
+      if (!tbody) return;
+      if (!state.items.length) {
+        tbody.innerHTML = '<tr><td colspan="' + (cfg.columns.length + (cfg.readOnly ? 0 : 1)) + '"><div class="empty-state">' +
+          '<i class="fa-solid fa-inbox"></i><p>No ' + (cfg.plural || "records") + ' found.</p>' +
+          '<span class="empty-hint">Records appear here when created.</span></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.items.map(rowHtml).join("");
+    }
+    function renderPagination(){
+      if (!pagEl) return;
+      const totalPages = Math.max(1, Math.ceil(state.total / state.perPage));
+      let html = '<nav><ul class="pagination pagination-crlmis">';
+      html += '<li class="page-item ' + (state.page <= 1 ? "disabled" : "") + '"><a class="page-link js-page" data-page="' + (state.page - 1) + '" href="#">&laquo;</a></li>';
+      for (let p = 1; p <= totalPages; p++) html += '<li class="page-item ' + (p === state.page ? "active" : "") + '"><a class="page-link js-page" data-page="' + p + '" href="#">' + p + "</a></li>";
+      html += '<li class="page-item ' + (state.page >= totalPages ? "disabled" : "") + '"><a class="page-link js-page" data-page="' + (state.page + 1) + '" href="#">&raquo;</a></li></ul></nav>';
+      pagEl.innerHTML = html;
+    }
+    async function load(){
+      if (!Auth.requireAuth()) return;
+      if (tbody) App.setLoading(tbody, true, "Loading " + (cfg.plural || "records") + "...");
+      let fetched = null;
+      try {
+        const params = { page: state.page, per_page: state.perPage };
+        Object.assign(params, state.filters);
+        const res = await cfg.resource.list(params);
+        fetched = Array.isArray(res) ? res : (res.data || []);
+        state.total = Array.isArray(res) ? fetched.length : (res.total != null ? res.total : fetched.length);
+      } catch (err) {
+        if (err.network || cfg.demoData) {
+          if (!state.localItems) {
+            state.localItems = cfg.demoData ? JSON.parse(JSON.stringify(cfg.demoData)) : [];
+          }
+          let filtered = [...state.localItems];
+          if (state.filters.search) {
+            const q = state.filters.search.toLowerCase();
+            filtered = filtered.filter(it => Object.values(it).some(val => String(val || "").toLowerCase().includes(q)));
+          }
+          if (state.filters.status) {
+            filtered = filtered.filter(it => String(it.status || "").toLowerCase() === state.filters.status.toLowerCase());
+          }
+          state.total = filtered.length;
+          const start = (state.page - 1) * state.perPage;
+          fetched = filtered.slice(start, start + state.perPage);
+        } else {
+          if (tbody) App.setEmpty(tbody, "Could not load " + (cfg.plural || "records") + ".", err.message);
+          return;
+        }
+      }
+      state.items = fetched || [];
+      renderRows(); renderPagination();
+    }
+    function openCreate(){
+      state.editingId = null;
+      form && form.reset();
+      const t = modalEl && modalEl.querySelector(".modal-title");
+      if (t) t.textContent = "Add " + (cfg.singular || "Record");
+      modalEl && typeof bootstrap !== "undefined" && new bootstrap.Modal(modalEl).show();
+    }
+    function openEdit(id){
+      const itemsToSearch = state.localItems || state.items;
+      const item = itemsToSearch.find(i => String(i.id) === String(id));
+      if (!item) return;
+      state.editingId = id;
+      if (form) cfg.fields.forEach(f => {
+        const el = form.querySelector('[name="' + f.name + '"]');
+        if (el) el.value = (item[f.name] != null ? item[f.name] : "");
+      });
+      const t = modalEl && modalEl.querySelector(".modal-title");
+      if (t) t.textContent = "Edit " + (cfg.singular || "Record");
+      modalEl && typeof bootstrap !== "undefined" && new bootstrap.Modal(modalEl).show();
+    }
+    function confirmDelete(id){
+      App.confirmDialog("Delete " + (cfg.singular || "record"), "This action cannot be undone.", async () => {
+        try {
+          await cfg.resource.remove(id);
+          App.toast("success", "Deleted", (cfg.singular || "Record") + " deleted.");
+          load();
+        } catch (err) {
+          if (err.network) {
+            if (!state.localItems) state.localItems = cfg.demoData ? JSON.parse(JSON.stringify(cfg.demoData)) : [];
+            state.localItems = state.localItems.filter(i => String(i.id) !== String(id));
+            App.toast("success", "Deleted", (cfg.singular || "Record") + " deleted.");
+            load();
+          } else {
+            App.toast("error", "Delete failed", err.message);
+          }
+        }
+      });
+    }
+    function bind(){
+      if (tbody) tbody.addEventListener("click", e => {
+        const edit = e.target.closest(".js-edit"), del = e.target.closest(".js-delete");
+        if (edit) { e.preventDefault(); openEdit(edit.dataset.id); }
+        else if (del) { e.preventDefault(); confirmDelete(del.dataset.id); }
+      });
+      if (form) form.addEventListener("submit", async e => {
+        e.preventDefault();
+        const data = App.serializeForm(form);
+        try {
+          if (state.editingId) await cfg.resource.update(state.editingId, data);
+          else await cfg.resource.create(data);
+          App.toast("success", "Saved", (cfg.singular || "Record") + " saved successfully.");
+          if (modalEl && typeof bootstrap !== "undefined") {
+            const m = bootstrap.Modal.getInstance(modalEl); if (m) m.hide();
+          }
+          load();
+        } catch (err) {
+          if (err.network) {
+            if (!state.localItems) state.localItems = cfg.demoData ? JSON.parse(JSON.stringify(cfg.demoData)) : [];
+            if (state.editingId) {
+              const idx = state.localItems.findIndex(i => String(i.id) === String(state.editingId));
+              if (idx !== -1) {
+                state.localItems[idx] = { ...state.localItems[idx], ...data };
+              }
+              App.toast("success", "Updated", (cfg.singular || "Record") + " updated.");
+            } else {
+              const newId = Date.now();
+              const autoCode = (cfg.singular.toUpperCase().slice(0,3)) + "-" + pad(state.localItems.length + 1, 6);
+              const newItem = { id: newId, status: "active", ...data };
+              const codeCol = cfg.columns.find(c => c.data.endsWith("_code"));
+              if (codeCol && !newItem[codeCol.data]) {
+                newItem[codeCol.data] = "CR-" + autoCode;
+              }
+              state.localItems.unshift(newItem);
+              App.toast("success", "Created", (cfg.singular || "Record") + " added successfully.");
+            }
+            if (modalEl && typeof bootstrap !== "undefined") {
+              const m = bootstrap.Modal.getInstance(modalEl); if (m) m.hide();
+            }
+            load();
+            return;
+          }
+          App.toast("error", "Save failed", err.message);
+        }
+      });
+      document.querySelectorAll(cfg.addSelector).forEach(b => b.addEventListener("click", e => { e.preventDefault(); openCreate(); }));
+      if (pagEl) pagEl.addEventListener("click", e => {
+        const link = e.target.closest(".js-page");
+        if (!link || link.parentElement.classList.contains("disabled")) return;
+        e.preventDefault();
+        state.page = parseInt(link.dataset.page, 10) || 1;
+        load();
+      });
+      if (filterBar) {
+        filterBar.querySelectorAll("[data-action='apply']").forEach(b => b.addEventListener("click", () => {
+          filterBar.querySelectorAll("[data-filter]").forEach(c => {
+            if (c.value) state.filters[c.dataset.filter] = c.value; else delete state.filters[c.dataset.filter];
+          });
+          state.page = 1; load();
+        }));
+        filterBar.querySelectorAll("[data-action='reset']").forEach(b => b.addEventListener("click", () => {
+          filterBar.querySelectorAll("[data-filter]").forEach(c => { c.value = ""; });
+          state.filters = {}; state.page = 1; load();
+        }));
+      }
+    }
+    bind(); load();
+    return { reload: load };
+  }
+  return { create };
+})();
+
+/* ---------------- 6. MODULE CONFIG & BUILDER ---------------- */
+const pad = (n, w) => String(n).padStart(w || 3, "0");
+const DEMO_SET = {
+  farmers: Array.from({ length: 20 }, (_, i) => ({
+    id: i + 1, farmer_code: "CR-FRM-" + pad(i + 1, 6), name: "Demo Farmer " + pad(i + 1, 3),
+    gender: i % 2 ? "Female" : "Male", phone: "0803 000 " + pad(i + 1, 4),
+    email: "demo.farmer" + (i + 1) + "@example.com", lga: "Calabar " + (i % 4 ? "Municipality" : "South"),
+    ward: "Ward " + (i % 3 + 1), status: i % 6 === 0 ? "pending" : "active"
+  })),
+  farms: Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1, farm_code: "CR-FARM-" + pad(i + 1, 6), name: "Cross River Livestock Farm " + pad(i + 1, 2),
+    farmer_name: "Demo Farmer " + pad(i + 1, 3), lga: "Ikom LGA",
+    farm_size: (5 + i * 1.5).toFixed(1), status: "active"
+  })),
+  animals: Array.from({ length: 50 }, (_, i) => {
+    const species = i < 20 ? "Cattle" : i < 30 ? "Goat" : i < 38 ? "Sheep" : i < 45 ? "Pig" : "Poultry";
+    return {
+      id: i + 1, animal_code: "CR-ANM-" + pad(i + 1, 6), tag_number: "D-" + pad(i + 1, 3),
+      species: species, breed: i % 2 === 0 ? "White Fulani" : "Muturu",
+      sex: i % 2 ? "Female" : "Male", dob: "2024-0" + (i % 9 + 1) + "-10",
+      health_status: i % 25 === 0 ? "sick" : "healthy", status: "active"
+    };
+  }),
+  vaccinations: Array.from({ length: 30 }, (_, i) => ({
+    id: i + 1, vaccination_code: "CR-VAC-" + pad(i + 1, 6), animal_tag: "D-" + pad(i + 1, 3),
+    vaccine_name: i % 2 === 0 ? "CBPP Vaccine" : "PPR Vaccine", disease: i % 2 === 0 ? "CBPP" : "Peste des Petits Ruminants",
+    date_administered: "2026-0" + (i % 9 + 1) + "-15", next_due_date: "2026-0" + ((i + 6) % 9 + 1) + "-15",
+    status: i % 5 === 0 ? "due" : "completed"
+  })),
+  diseases: Array.from({ length: 5 }, (_, i) => ({
+    id: i + 1, report_code: "CR-DIS-" + pad(i + 1, 6), disease_name: i % 2 === 0 ? "Foot and Mouth Disease" : "Anthrax",
+    animal_tag: "D-" + pad(i * 7 + 10, 3), severity: i % 2 ? "Severe" : "Mild",
+    status: i % 3 === 0 ? "suspected" : "confirmed", date_reported: "2026-0" + (i + 4) + "-20", lga: "Ogoja LGA"
+  })),
+  outbreaks: Array.from({ length: 2 }, (_, i) => ({
+    id: i + 1, outbreak_code: "CR-OUT-" + pad(i + 1, 6), disease_name: i === 0 ? "African Swine Fever" : "Avian Influenza",
+    lga: "Calabar South", start_date: "2026-03-05",
+    affected_animals: (i + 1) * 6, affected_farms: i + 1, deaths: i * 2, status: "active"
+  })),
+  veterinary: Array.from({ length: 4 }, (_, i) => ({
+    id: i + 1, visit_code: "CR-VET-" + pad(i + 1, 6), animal_tag: "D-" + pad(i * 5 + 4, 3),
+    vet_name: "Dr. Emmanuel Duke", visit_date: "2026-03-12",
+    diagnosis: i % 2 === 0 ? "Helminthiasis (Worm Infestation)" : "Bovine Trypanosomiasis", outcome: i === 0 ? "referred" : "treated"
+  })),
+  users: [
+    { id: 1, name: "Demo Super Admin", email: "admin@example.com", role_name: "Super Administrator", office_name: "Ministry HQ", lga_name: "—", status: "active" },
+    { id: 2, name: "Demo LGA Officer", email: "officer@example.com", role_name: "LGA Livestock Officer", office_name: "Calabar Office", lga_name: "Calabar Municipality", status: "active" },
+    { id: 3, name: "Demo Vet Officer", email: "vet@example.com", role_name: "Veterinary Officer", office_name: "Ikom Veterinary Office", lga_name: "Ikom LGA", status: "active" }
+  ],
+  lgas: Array.from({ length: 6 }, (_, i) => ({
+    id: i + 1, name: ["Calabar Municipality", "Calabar South", "Ikom", "Ogoja", "Obudu", "Akamkpa"][i],
+    code: ["CAL-M", "CAL-S", "IKM", "OGJ", "OBD", "AKM"][i],
+    office_name: ["Calabar Central Office", "Calabar South Office", "Ikom Zonal Office", "Ogoja Zonal Office", "Obudu Field Office", "Akamkpa Office"][i],
+    officer_name: "Officer " + (i + 1), status: "active"
+  })),
+  cattleTypes: [
+    { id: 1, name: "OX", code: "OX", status: "active" }, { id: 2, name: "Cow", code: "COW", status: "active" },
+    { id: 3, name: "Heifer", code: "HEF", status: "active" }, { id: 4, name: "Male Calf", code: "MCALF", status: "active" },
+    { id: 5, name: "Female Calf", code: "FCALF", status: "active" }, { id: 6, name: "ShibhanType", code: "SHT", status: "active" }
+  ],
+  breeds: [
+    { id: 1, name: "Bunaji (White Fulani)", species: "Cattle", status: "active" },
+    { id: 2, name: "Rahaji (Red Bororo)", species: "Cattle", status: "active" },
+    { id: 3, name: "Sokoto Gudali", species: "Cattle", status: "active" },
+    { id: 4, name: "Muturu", species: "Cattle", status: "active" },
+    { id: 5, name: "West African Dwarf Goat", species: "Goat", status: "active" },
+    { id: 6, name: "Red Sokoto Goat", species: "Goat", status: "active" },
+    { id: 7, name: "West African Dwarf Sheep", species: "Sheep", status: "active" },
+    { id: 8, name: "Large White Pig", species: "Pig", status: "active" }
+  ],
+  tags: [
+    { id: 1, tag_number: "CR-TAG-00101", animal_id: "CR-ANM-000001", status: "active" },
+    { id: 2, tag_number: "CR-TAG-00102", animal_id: "CR-ANM-000002", status: "active" },
+    { id: 3, tag_number: "CR-TAG-00103", animal_id: "CR-ANM-000003", status: "active" },
+    { id: 4, tag_number: "CR-TAG-00104", animal_id: "CR-ANM-000004", status: "active" },
+    { id: 5, tag_number: "CR-TAG-00105", animal_id: "CR-ANM-000005", status: "active" }
+  ],
+  milks: [
+    { id: 1, tag_number: "D-002", milk_date: "2026-03-10", litres: 14.5, collector: "Officer Okon", status: "recorded" },
+    { id: 2, tag_number: "D-004", milk_date: "2026-03-11", litres: 16.0, collector: "Officer Bassey", status: "recorded" },
+    { id: 3, tag_number: "D-008", milk_date: "2026-03-12", litres: 12.2, collector: "Officer Okon", status: "recorded" }
+  ],
+  medicines: [
+    { id: 1, name: "Oxytetracycline 20% LA", category: "Antibiotic", stock_qty: 45, expiry_date: "2027-12-31", status: "available" },
+    { id: 2, name: "Ivermectin 1%", category: "Antiparasitic", stock_qty: 28, expiry_date: "2027-08-31", status: "available" },
+    { id: 3, name: "Albendazole 10% Drench", category: "Anthelmintic", stock_qty: 12, expiry_date: "2026-11-30", status: "low" },
+    { id: 4, name: "Penicillin-Streptomycin", category: "Antibiotic", stock_qty: 0, expiry_date: "2025-05-01", status: "expired" }
+  ],
+  ledgers: [
+    { id: 1, entry_date: "2026-03-01", entry_type: "income", amount: "450,000", description: "Registration & Tagging fees", status: "posted" },
+    { id: 2, entry_date: "2026-03-05", entry_type: "expense", amount: "185,000", description: "Vaccine cold-chain fuel supply", status: "posted" },
+    { id: 3, entry_date: "2026-03-08", entry_type: "income", amount: "320,000", description: "Veterinary clinical inspection fees", status: "posted" },
+    { id: 4, entry_date: "2026-03-12", entry_type: "expense", amount: "95,000", description: "Syringes and PPE supplies", status: "posted" }
+  ],
+  employees: [
+    { id: 1, full_name: "Dr. Emmanuel Duke", position: "Chief Veterinary Officer", phone: "0803 123 4567", email: "e.duke@cr-lmis.gov.ng", lga: "Calabar Municipality", status: "active" },
+    { id: 2, full_name: "Blessing Asuquo", position: "Senior Livestock Officer", phone: "0803 234 5678", email: "b.asuquo@cr-lmis.gov.ng", lga: "Ikom LGA", status: "active" },
+    { id: 3, full_name: "James Odey", position: "Field Surveillance Officer", phone: "0803 345 6789", email: "j.odey@cr-lmis.gov.ng", lga: "Ogoja LGA", status: "active" },
+    { id: 4, full_name: "Victoria Effiom", position: "Data Analyst", phone: "0803 456 7890", email: "v.effiom@cr-lmis.gov.ng", lga: "Ministry HQ", status: "active" }
+  ],
+  countries: [
+    { id: 1, name: "Nigeria", code: "NG", status: "active" },
+    { id: 2, name: "Cameroon", code: "CM", status: "active" },
+    { id: 3, name: "Benin", code: "BJ", status: "active" },
+    { id: 4, name: "Chad", code: "TD", status: "active" }
+  ],
+  inventory: [
+    { id: 1, vaccine_name: "CBPP Vaccine (Live)", batch_number: "BATCH-CBPP-26A", quantity_received: 2000, quantity_used: 1200, current_quantity: 800, expiry_date: "2027-12-31", status: "available" },
+    { id: 2, vaccine_name: "PPR Homologous Vaccine", batch_number: "BATCH-PPR-26B", quantity_received: 1500, quantity_used: 300, current_quantity: 1200, expiry_date: "2027-06-30", status: "available" }
+  ],
+  notifications: [
+    { title: "Welcome to CR-LMIS", msg: "Cross River State Livestock Management Information System is online.", type: "info" },
+    { title: "Vaccination Campaign: Calabar & Ikom", msg: "CBPP & Anthrax vaccination campaign is scheduled across priority LGAs.", type: "warning" },
+    { title: "Disease Surveillance Alert", msg: "Suspected Foot & Mouth Disease reported in Ogoja LGA — monitoring ongoing.", type: "danger" }
+  ],
+  privileges: [
+    { id: 1, role_name: "Super Administrator", permission: "Full system administration and database management", status: "granted" },
+    { id: 2, role_name: "Ministry HQ Administrator", permission: "Statewide analytics, campaign approval, exports", status: "granted" },
+    { id: 3, role_name: "LGA Livestock Officer", permission: "LGA record creation, livestock registration, vaccinations", status: "granted" },
+    { id: 4, role_name: "Veterinary Officer", permission: "Clinical diagnoses, outbreak alerts, treatments", status: "granted" },
+    { id: 5, role_name: "Field Officer", permission: "Field data collection, tag assignment", status: "granted" },
+    { id: 6, role_name: "Read-Only Analyst", permission: "Dashboard and reports viewing and export", status: "granted" }
+  ],
+  auditLogs: [
+    { id: 1, created_at: "2026-03-15 09:24", user_name: "admin@example.com", action: "LOGIN", module: "AUTH", record_id: "—", description: "Super Administrator logged in successfully" },
+    { id: 2, created_at: "2026-03-15 10:12", user_name: "officer@example.com", action: "CREATE", module: "FARMERS", record_id: "CR-FRM-000021", description: "Registered new farmer in Calabar South" },
+    { id: 3, created_at: "2026-03-15 11:05", user_name: "vet@example.com", action: "CREATE", module: "VACCINATIONS", record_id: "CR-VAC-000031", description: "Administered CBPP vaccine to tag D-015" },
+    { id: 4, created_at: "2026-03-15 11:45", user_name: "vet@example.com", action: "UPDATE", module: "DISEASES", record_id: "CR-DIS-000003", description: "Updated disease status to Resolved" }
+  ]
+};
+
+const MODULES = {
+  farmers:      { name:"farmers", singular:"Farmer", plural:"farmers", resource:"farmers", demo: DEMO_SET.farmers,
+    cols:[["farmer_code","Farmer ID"],["name","Full Name"],["gender","Gender"],["phone","Phone"],["lga","LGA"],["ward","Ward"],["status","Status","badge"]],
+    fields:[["farmer_code","Farmer ID (auto: CR-FRM-XXXXXX)","text",false],["name","Full name","text",true],["gender","Gender","select",true,"Female,Male"],["date_of_birth","Date of birth","date",false],["phone","Phone number","text",false],["email","Email","email",false],["address","Address","text",false],["lga","LGA","text",true],["ward","Ward","text",false],["community","Community","text",false],["occupation","Occupation","text",false],["status","Status","select",true,"active,pending,archived"]] },
+  farms:        { name:"farms", singular:"Farm", plural:"farms", resource:"farms", demo: DEMO_SET.farms,
+    cols:[["farm_code","Farm ID"],["name","Farm Name"],["farmer_name","Owner"],["lga","LGA"],["farm_size","Size (ha)"],["status","Status","badge"]],
+    fields:[["farm_code","Farm ID (auto: CR-FARM-XXXXXX)","text",false],["farmer_id","Farmer ID","text",true],["name","Farm name","text",true],["farm_type","Farm type","text",false],["lga","LGA","text",true],["ward","Ward","text",false],["community","Community","text",false],["address","Address","text",false],["latitude","GPS latitude","text",false],["longitude","GPS longitude","text",false],["farm_size","Farm size (ha)","number",false],["ownership_type","Ownership type","text",false],["status","Status","select",true,"active,pending,archived"]] },
+  livestock:    { name:"livestock", singular:"Animal", plural:"livestock records", resource:"animals", demo: DEMO_SET.animals,
+    cols:[["animal_code","Animal ID"],["tag_number","Tag"],["species","Species"],["breed","Breed"],["sex","Sex"],["dob","DOB","date"],["health_status","Health","badge"]],
+    fields:[["animal_code","Animal ID (auto)","text",false],["farm_id","Farm ID","text",false],["farmer_id","Farmer ID","text",true],["species","Species","select",true,"Cattle,Goat,Sheep,Pig,Poultry,Rabbit,Other"],["breed","Breed","text",false],["sex","Sex","select",true,"Male,Female"],["date_of_birth","Date of birth","date",false],["color","Color","text",false],["tag_number","Identification tag","text",false],["weight","Weight (kg)","number",false],["acquisition_date","Acquisition date","date",false],["source","Source","text",false],["health_status","Health status","select",true,"healthy,sick,quarantined,deceased"],["status","Record status","select",true,"active,archived"]] },
+  "cattle-types":{ name:"cattle-types", singular:"Cattle Type", plural:"cattle types", resource:"species", demo: DEMO_SET.cattleTypes,
+    cols:[["name","Type Name"],["code","Code"],["status","Status","badge"]],
+    fields:[["name","Type name","text",true],["code","Code","text",false],["description","Description","textarea",false],["status","Status","select",true,"active,archived"]] },
+  breeds:       { name:"breeds", singular:"Breed", plural:"breeds", resource:"breeds", demo: DEMO_SET.breeds,
+    cols:[["name","Breed"],["species","Species"],["status","Status","badge"]],
+    fields:[["name","Breed name","text",true],["species","Species","select",true,"Cattle,Goat,Sheep,Pig,Poultry"],["description","Description","textarea",false],["status","Status","select",true,"active,archived"]] },
+  tags:         { name:"tags", singular:"Tag", plural:"tags", resource:"tags", demo: DEMO_SET.tags,
+    cols:[["tag_number","Tag Number"],["animal_id","Animal"],["status","Status","badge"]],
+    fields:[["tag_number","Tag number","text",true],["animal_id","Animal ID","text",false],["status","Status","select",true,"active,archived"]] },
+  milks:        { name:"milks", singular:"Milk record", plural:"milk records", resource:"milks", demo: DEMO_SET.milks,
+    cols:[["tag_number","Animal Tag"],["milk_date","Date","date"],["litres","Litres"],["status","Status","badge"]],
+    fields:[["tag_number","Animal tag","text",true],["milk_date","Milk date","date",true],["litres","Litres","number",true],["collector","Collected by","text",false],["status","Status","select",true,"recorded,pending"]] },
+  medicines:    { name:"medicines", singular:"Medicine", plural:"medicines", resource:"medicines", demo: DEMO_SET.medicines,
+    cols:[["name","Medicine"],["category","Category"],["stock_qty","Stock Qty"],["expiry_date","Expiry","date"],["status","Status","badge"]],
+    fields:[["name","Medicine name","text",true],["category","Category","text",false],["stock_qty","Stock quantity","number",false],["expiry_date","Expiry date","date",false],["status","Status","select",true,"available,low,expired"]] },
+  ledgers:      { name:"ledgers", singular:"Ledger entry", plural:"ledger entries", resource:"ledgers", demo: DEMO_SET.ledgers,
+    cols:[["entry_date","Date","date"],["entry_type","Type"],["amount","Amount"],["description","Description"],["status","Status","badge"]],
+    fields:[["entry_date","Entry date","date",true],["entry_type","Type","select",true,"income,expense"],["amount","Amount","number",true],["description","Description","textarea",false],["status","Status","select",true,"posted,pending"]] },
+  employees:    { name:"employees", singular:"Employee", plural:"employees", resource:"employees", demo: DEMO_SET.employees,
+    cols:[["full_name","Full Name"],["position","Position"],["phone","Phone"],["lga","LGA"],["status","Status","badge"]],
+    fields:[["full_name","Full name","text",true],["position","Position","text",false],["phone","Phone","text",false],["email","Email","email",false],["lga","LGA","text",false],["status","Status","select",true,"active,inactive"]] },
+  countries:    { name:"countries", singular:"Country", plural:"countries", resource:"countries", demo: DEMO_SET.countries,
+    cols:[["name","Country"],["code","Code"],["status","Status","badge"]],
+    fields:[["name","Country name","text",true],["code","Code","text",false],["status","Status","select",true,"active,inactive"]] },
+  vaccinations: { name:"vaccinations", singular:"Vaccination record", plural:"vaccination records", resource:"vaccinations", demo: DEMO_SET.vaccinations,
+    cols:[["vaccination_code","Vacc. ID"],["animal_tag","Animal Tag"],["vaccine_name","Vaccine"],["disease","Disease"],["date_administered","Given On","date"],["next_due_date","Next Due","date"],["status","Status","badge"]],
+    fields:[["vaccination_code","Vaccination ID (auto)","text",false],["animal_id","Animal ID","text",true],["farmer_id","Farmer ID","text",false],["farm_id","Farm ID","text",false],["vaccine","Vaccine","text",true],["disease","Disease targeted","text",false],["dose","Dose","text",false],["batch_number","Batch number","text",false],["date_administered","Date administered","date",true],["next_due_date","Next vaccination date","date",false],["administered_by","Administered by","text",false]] },
+  inventory:    { name:"inventory", singular:"Inventory item", plural:"inventory items", resource:"inventory", demo: DEMO_SET.inventory,
+    cols:[["vaccine_name","Vaccine"],["batch_number","Batch"],["quantity_received","Received"],["quantity_used","Used"],["current_quantity","Current"],["expiry_date","Expiry","date"],["status","Status","badge"]],
+    fields:[["vaccine_name","Vaccine","text",true],["batch_number","Batch number","text",true],["manufacturer","Manufacturer","text",false],["quantity_received","Quantity received","number",false],["quantity_used","Quantity used","number",false],["expiry_date","Expiry date","date",false],["storage_location","Storage location","text",false],["minimum_stock","Minimum stock level","number",false],["status","Status","select",true,"available,low,expired"]] },
+  diseases:     { name:"diseases", singular:"Disease report", plural:"disease reports", resource:"diseaseReports", demo: DEMO_SET.diseases,
+    cols:[["report_code","Report ID"],["disease_name","Disease"],["animal_tag","Animal Tag"],["severity","Severity"],["lga","LGA"],["date_reported","Reported","date"],["status","Status","badge"]],
+    fields:[["report_code","Report ID (auto)","text",false],["disease","Disease","text",true],["animal_id","Animal ID","text",false],["suspected_confirmed","Report type","select",true,"Suspected,Confirmed"],["number_exposed","Number exposed","number",false],["number_affected","Number affected","number",false],["number_dead","Number dead","number",false],["number_recovered","Number recovered","number",false],["date_detected","Date detected","date",false],["date_reported","Date reported","date",true],["lga","LGA","text",false],["ward","Ward","text",false],["community","Community","text",false],["severity","Severity","select",true,"Mild,Moderate,Severe,Critical"],["symptoms","Symptoms","textarea",false],["status","Status","select",true,"Suspected,Confirmed,Under Investigation,Resolved,Closed"]] },
+  outbreaks:    { name:"outbreaks", singular:"Outbreak", plural:"outbreaks", resource:"outbreaks", demo: DEMO_SET.outbreaks,
+    cols:[["outbreak_code","Outbreak ID"],["disease_name","Disease"],["lga","LGA"],["start_date","Start","date"],["affected_animals","Animals Affected"],["deaths","Deaths"],["status","Response Status","badge"]],
+    fields:[["outbreak_code","Outbreak ID (auto)","text",false],["disease","Disease","text",true],["lga","LGA","text",true],["start_date","Start date","date",true],["affected_farms","Farms affected","number",false],["affected_animals","Animals affected","number",false],["deaths","Deaths","number",false],["response_status","Response status","select",true,"active,investigating,controlled,resolved"],["assigned_officer","Assigned veterinary officer","text",false],["control_measures","Control measures","textarea",false]] },
+  veterinary:   { name:"veterinary", singular:"Veterinary visit", plural:"veterinary visits", resource:"veterinary", demo: DEMO_SET.veterinary,
+    cols:[["visit_code","Visit ID"],["animal_tag","Animal"],["vet_name","Officer"],["visit_date","Date","date"],["diagnosis","Diagnosis"],["outcome","Outcome","badge"]],
+    fields:[["visit_code","Visit ID (auto)","text",false],["animal_id","Animal ID","text",true],["farmer_id","Farmer ID","text",false],["farm_id","Farm ID","text",false],["officer","Veterinary officer","text",false],["visit_date","Visit date","date",true],["reason","Reason","text",false],["diagnosis","Diagnosis","text",false],["treatment","Treatment","text",false],["medication","Medication","text",false],["dosage","Dosage","text",false],["outcome","Outcome","select",true,"treated,referred,recovered,deceased"],["follow_up_date","Follow-up date","date",false]] },
+  users:        { name:"users", singular:"User", plural:"users", resource:"users", demo: DEMO_SET.users,
+    cols:[["name","Name"],["email","Email"],["role_name","Role"],["office_name","Office"],["lga_name","LGA"],["status","Status","badge"]],
+    fields:[["name","Full name","text",true],["email","Email","email",true],["password","Password (dev account only)","password",false],["role_name","Role","select",true,"Super Administrator,Ministry HQ Administrator,LGA Livestock Officer,Veterinary Officer,Field Officer,Read-Only Analyst"],["office_name","Office","text",false],["lga_name","LGA","text",false],["status","Status","select",true,"active,inactive"]] },
+  lgas:         { name:"lgas", singular:"LGA", plural:"LGAs", resource:"lgas", demo: DEMO_SET.lgas,
+    cols:[["name","LGA Name"],["code","Code"],["office_name","Livestock Office"],["officer_name","Officer"],["status","Status","badge"]],
+    fields:[["name","LGA name","text",true],["code","Code","text",false],["office_name","Livestock office","text",false],["officer_name","Officer","text",false],["contact","Contact information","text",false],["status","Status","select",true,"active,inactive"]] },
+  privileges:   { name:"privileges", singular:"Permission", plural:"permissions", resource:"privileges", demo: DEMO_SET.privileges, readOnly: true,
+    cols:[["role_name","Role"],["permission","Permission"],["status","Status","badge"]],
+    fields:[["role_name","Role","select",false,"Super Administrator,Ministry HQ Administrator,LGA Livestock Officer,Veterinary Officer,Field Officer,Read-Only Analyst"],["permission","Permission","text",false],["status","Status","select",false,"granted,denied"]] },
+  "audit-logs": { name:"audit-logs", singular:"Log entry", plural:"audit log entries", resource:"auditLogs", demo: DEMO_SET.auditLogs, readOnly: true,
+    cols:[["created_at","Timestamp","date"],["user_name","User"],["action","Action"],["module","Module"],["record_id","Record"],["description","Description"]],
+    fields:[] }
+};
+
+function buildFieldsHTML(mod, fields, readOnly){
+  if (readOnly || !fields.length) return '<p class="text-muted" style="font-size:12.5px;">This module is read-only.</p>';
+  return fields.map(f => {
+    const [name, label, type, req, opts] = f;
+    const t = type || "text";
+    const required = req ? " required" : "";
+    const id = mod + "-f-" + name;
+    let control;
+    if (t === "select") control = '<select class="form-select" name="' + name + '" id="' + id + '"' + required + ">" +
+      '<option value="">Select...</option>' + (opts || "").split(",").map(o => '<option value="' + o + '">' + o + "</option>").join("") + "</select>";
+    else if (t === "textarea") control = '<textarea class="form-control" name="' + name + '" id="' + id + '" rows="2"' + required + "></textarea>";
+    else control = '<input type="' + t + '" class="form-control" name="' + name + '" id="' + id + '"' + required + ">";
+    return '<div class="mb-3"><label class="form-label" for="' + id + '">' + label + (req ? ' <span style="color:#ed5565;">*</span>' : "") + "</label>" + control + "</div>";
+  }).join("");
+}
+
+const builtModules = {};
+function ensureModule(route){
+  const cfg = MODULES[route];
+  if (!cfg) return;
+  const section = document.getElementById("view-" + route);
+  if (!section) return;
+
+  if (!builtModules[route]) {
+    builtModules[route] = true;
+    const norm = {
+      tableSelector: "#tbl-" + route, paginationSelector: "#pag-" + route,
+      filterBarSelector: "#filt-" + route, modalId: "modal-" + route, formId: "form-" + route,
+      addSelector: "[data-add='" + route + "']",
+      resource: Api[cfg.resource], singular: cfg.singular, plural: cfg.plural,
+      readOnly: !!cfg.readOnly, demoData: cfg.demo, demoLabel: cfg.demoLabel,
+      columns: cfg.cols.map(c => ({ data: c[0], title: c[1], type: c[2] })),
+      fields: cfg.fields.map(f => ({ name: f[0], label: f[1], type: f[2], options: f[4], required: !!f[3] }))
+    };
+
+    const addBtn = cfg.readOnly ? "" : '<a href="#" class="btn btn-crlmis btn-sm" data-add="' + route + '"><i class="fa-solid fa-plus me-1"></i>Add ' + cfg.singular + "</a>";
+    const actTh = cfg.readOnly ? "" : "<th>Actions</th>";
+
+    section.innerHTML =
+      '<div class="page-head"><h1>' + cfg.plural.replace(/^./, c => c.toUpperCase()) + '</h1>' +
+      '<nav class="breadcrumb"><i class="fa-solid fa-house"></i> Home &nbsp;/&nbsp; ' + (cfg.singular || "Module") + "</nav></div>" +
+      '<div class="content">' +
+        '<div class="filter-bar" id="filt-' + route + '"><div class="row g-2 align-items-end">' +
+          '<div class="col-md-5"><label class="form-label">Search</label><input class="form-control" data-filter="search" placeholder="Search records..."></div>' +
+          '<div class="col-md-2"><label class="form-label">Status</label><select class="form-select" data-filter="status"><option value="">All</option><option>active</option><option>pending</option><option>archived</option></select></div>' +
+          '<div class="col-md-3"><button class="btn btn-crlmis me-1" data-action="apply"><i class="fa-solid fa-filter me-1"></i>Apply</button>' +
+          '<button class="btn btn-outline-secondary" data-action="reset">Reset</button></div>' +
+        "</div></div>" +
+        '<div class="card-box"><div class="card-head"><h5>' + (cfg.plural || "Records") + "</h5><div class='tools'>" + addBtn + "</div></div>" +
+          '<div class="table-wrap"><table class="table table-crlmis" id="tbl-' + route + '">' +
+            "<thead><tr>" + cfg.cols.map(c => "<th>" + c[1] + "</th>").join("") + actTh + "</tr></thead><tbody></tbody></table></div>" +
+          '<div id="pag-' + route + '"></div>' +
+        "</div>" +
+      "</div>";
+
+    const tpl = document.getElementById("moduleModalTpl");
+    if (tpl && !cfg.readOnly) {
+      const clone = tpl.content.firstElementChild.cloneNode(true);
+      clone.id = "modal-" + route;
+      const form = clone.querySelector("form");
+      form.id = "form-" + route;
+      form.classList.add("modal-body");
+      form.querySelector(".form-fields").innerHTML = buildFieldsHTML(route, cfg.fields, false);
+      const submit = clone.querySelector(".form-submit");
+      submit.type = "submit";
+      section.appendChild(clone);
+    }
+
+    builtModules[route] = CrudPage.create(norm);
+  } else if (builtModules[route] && builtModules[route].reload) {
+    builtModules[route].reload();
+  }
+}
+
+/* ---------------- 7. ANALYTICS ---------------- */
+const Analytics = (() => {
+  const byId = id => document.getElementById(id);
+  function kpiCard(label, value, color, icon){
+    return '<div class="col-xl-3 col-md-4 col-sm-6"><div class="kpi-card kpi-sm"><div class="kpi-icon" style="background:' + color + ';">' +
+      '<i class="fa-solid ' + icon + '"></i></div><div class="kpi-body"><div class="kpi-label">' + label + '</div><div class="kpi-value">' + value + "</div></div></div></div>";
+  }
+  function speciesCounts(){
+    const out = {};
+    DEMO_SET.animals.forEach(a => { out[a.species] = (out[a.species] || 0) + 1; });
+    return out;
+  }
+  async function init(){
+    if (!Auth.requireAuth()) return;
+    let demo = true, api = null;
+    try { api = await Api.dashboard.summary(); demo = false; } catch (err) { if (!err.network) throw err; }
+
+    const cap = byId("analyticsCaption");
+    if (cap) cap.hidden = !demo;
+
+    const s = speciesCounts();
+    const kpis = [
+      ["Total Farmers", DEMO_SET.farmers.length, "#23c6c8", "fa-users"],
+      ["Total Farms", DEMO_SET.farms.length, "#1c84c6", "fa-house-chimney"],
+      ["Total Livestock", DEMO_SET.animals.length, "#1ab394", "fa-paw"],
+      ["Cattle Population", s.Cattle || 0, "#2f8f5b", "fa-cow"],
+      ["Goat Population", s.Goat || 0, "#f8ac59", "fa-frog"],
+      ["Sheep Population", s.Sheep || 0, "#8f7ce8", "fa-feather-pointed"],
+      ["Pig Population", s.Pig || 0, "#ed5565", "fa-bacon"],
+      ["Poultry Population", s.Poultry || 0, "#1c84c6", "fa-egg"],
+      ["Vaccinations Completed", DEMO_SET.vaccinations.length, "#1ab394", "fa-syringe"],
+      ["Vaccination Coverage", Math.round(DEMO_SET.vaccinations.length / DEMO_SET.animals.length * 100) + "%", "#23c6c8", "fa-percent"],
+      ["Active Disease Cases", DEMO_SET.diseases.length, "#ed5565", "fa-diagnoses"],
+      ["Active Outbreaks", DEMO_SET.outbreaks.length, "#f8ac59", "fa-triangle-exclamation"],
+      ["Registered LGAs", DEMO_SET.lgas.length, "#1c84c6", "fa-globe"],
+      ["Field Officers Assigned", DEMO_SET.employees.length, "#9aa0a8", "fa-user-shield"]
+    ];
+    byId("analyticsKpis").innerHTML = kpis.map(k => kpiCard(k[0], k[1], k[2], k[3])).join("");
+
+    const obs = byId("observations");
+    if (obs) {
+      const casesByLga = {};
+      DEMO_SET.diseases.forEach(d => { casesByLga[d.lga] = (casesByLga[d.lga] || 0) + 1; });
+      const topLga = Object.entries(casesByLga).sort((a, b) => b[1] - a[1])[0];
+      const items = [
+        "<b>Highest reported cases:</b> " + (topLga ? topLga[0] + " (" + topLga[1] + " report(s))" : "none") + " — active surveillance.",
+        "<b>Species with highest population:</b> " + (Object.entries(s).sort((a,b) => b[1]-a[1])[0] || ["—", 0]).join(" = ") + ".",
+        "<b>Vaccination coverage:</b> " + Math.round(DEMO_SET.vaccinations.length / DEMO_SET.animals.length * 100) + "% coverage in target LGAs.",
+        "<b>Active outbreaks:</b> " + DEMO_SET.outbreaks.length + " outbreak investigation(s) currently being monitored."
+      ];
+      obs.innerHTML = items.map(t => '<div class="obs-item"><i class="fa-solid fa-circle-info"></i><span>' + t + "</span></div>").join("");
+    }
+
+    if (typeof Chart === "undefined") return;
+    Chart.defaults.font.family = "'Open Sans', Helvetica, Arial, sans-serif";
+    Chart.defaults.font.size = 11; Chart.defaults.color = "#9aa0a8";
+    const labels = Object.keys(s), values = Object.values(s);
+    const spCanvas = byId("speciesChart");
+    if (spCanvas) {
+      if (spCanvas._chartInstance) spCanvas._chartInstance.destroy();
+      spCanvas._chartInstance = new Chart(spCanvas, {
+        type: "bar",
+        data: { labels, datasets: [{ label: "Population", data: values, backgroundColor: ["#ed5565","#1ab394","#f8ac59","#1c84c6","#23c6c8"], borderRadius: 3 }] },
+        options: { responsive: true, maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, grid: { color: "#f0f1f3" } }, x: { grid: { display: false } } },
+          plugins: { legend: { display: false } } }
+      });
+    }
+    const byMonth = {};
+    DEMO_SET.diseases.forEach(d => { const m = (d.date_reported || "").slice(0, 7) || "2026-03"; byMonth[m] = (byMonth[m] || 0) + 1; });
+    const disCanvas = byId("diseaseTrendChart");
+    if (disCanvas) {
+      if (disCanvas._chartInstance) disCanvas._chartInstance.destroy();
+      disCanvas._chartInstance = new Chart(disCanvas, {
+        type: "line",
+        data: { labels: Object.keys(byMonth), datasets: [{ label: "Disease reports", data: Object.values(byMonth),
+          borderColor: "#ed5565", backgroundColor: "#ed5565", tension: 0, fill: false, pointRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, grid: { color: "#f0f1f3" } }, x: { grid: { display: false } } },
+          plugins: { legend: { display: false } } }
+      });
+    }
+  }
+  return { init };
+})();
+
+/* ---------------- 8. REPORTS ---------------- */
+const REPORT_CARDS = [
+  ["farmer registration", "Farmers", [
+    ["Full register", "farmers"], ["Farmers by LGA", "farmers"], ["Farmers by gender", "farmers"]]],
+  ["livestock population", "Livestock", [
+    ["Population by species", "livestock"], ["Population by LGA", "livestock"], ["Population by breed", "livestock"]]],
+  ["vaccination coverage", "Vaccination", [
+    ["Campaign report", "vaccination"], ["Coverage report", "vaccination"], ["Vaccination history", "vaccination"]]],
+  ["disease surveillance", "Disease", [
+    ["Disease cases", "disease"], ["Outbreaks", "disease"], ["Mortality report", "disease"]]],
+  ["veterinary services", "Veterinary", [
+    ["Visit log", "veterinary"], ["Treatments", "veterinary"], ["Diagnoses", "veterinary"]]],
+  ["administration", "Administrative", [
+    ["User activity", "farmers"], ["Data-entry activity", "farmers"]]
+  ]
+];
+function initReportsPage(){
+  const grid = document.getElementById("reportsGrid");
+  if (!grid) return;
+  grid.innerHTML = REPORT_CARDS.map(g => {
+    const btns = g[2].map(r =>
+      '<button class="btn btn-crlmis-outline btn-sm me-1 mb-1 js-gen-report" data-report="' + r[1] + '" data-format="csv" title="Generate ' + r[0] + ' CSV">' +
+      '<i class="fa-solid fa-file-csv me-1"></i>CSV</button>' +
+      '<button class="btn btn-crlmis-outline btn-sm me-1 mb-1 js-gen-report" data-report="' + r[1] + '" data-format="excel" title="Generate ' + r[0] + ' Excel">' +
+      '<i class="fa-solid fa-file-excel me-1"></i>Excel</button>'
+    ).join("");
+    return '<div class="col-lg-4 col-md-6 mb-3"><div class="report-card"><h5>' + g[1] + " Reports</h5><p>" +
+      g[0].replace(/^./, c => c.toUpperCase()) + ".</p>" + btns + "</div></div>";
+  }).join("") + '<div class="col-12"><span class="demo-caption" id="reportsCaption" style="display:none;"><i class="fa-solid fa-flask me-1"></i>Report export initiated.</span></div>';
+
+  grid.querySelectorAll(".js-gen-report").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const kind = btn.dataset.report, fmt = btn.dataset.format;
+    const title = btn.getAttribute("title") || kind;
+    try {
+      const fn = Api.reports[kind];
+      if (fn) await fn({ format: fmt, report: title });
+      App.toast("success", "Report generated", title + " (" + fmt.toUpperCase() + ") is ready.");
+    } catch (err) {
+      // Generate client-side CSV download in demo mode
+      const dataset = DEMO_SET[kind === "livestock" ? "animals" : kind === "farmers" ? "farmers" : kind === "vaccination" ? "vaccinations" : kind === "disease" ? "diseases" : "veterinary"] || DEMO_SET.farmers;
+      if (dataset && dataset.length) {
+        const keys = Object.keys(dataset[0]);
+        const csvContent = "data:text/csv;charset=utf-8," + [keys.join(",")].concat(dataset.map(row => keys.map(k => '"' + (row[k] || "") + '"').join(","))).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "CR_LMIS_" + kind + "_" + Date.now() + ".csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        App.toast("success", "Export completed", title + " downloaded as CSV.");
+      } else {
+        App.toast("info", "Report ready", title + " generated.");
+      }
+    }
+  }));
+}
+
+/* ---------------- 9. NOTIFICATIONS ---------------- */
+function initNotifications(){
+  const list = document.getElementById("noteList");
+  if (!list) return;
+  list.innerHTML = DEMO_SET.notifications.map(n =>
+    '<li class="note-item"><i class="fa-solid ' + (n.type === "danger" ? "fa-triangle-exclamation" : n.type === "warning" ? "fa-bell" : "fa-circle-info") +
+    '" style="color:' + (n.type === "danger" ? "#ed5565" : n.type === "warning" ? "#f8ac59" : "#1c84c6") + ';"></i>' +
+    '<div><div class="n-title">' + n.title + '</div><div class="n-msg">' + n.msg + "</div></div></li>").join("") +
+    '<li class="note-item" style="border-bottom:none;"><span class="demo-caption" style="margin:0;"><i class="fa-solid fa-bell me-1"></i>All system notifications are up to date.</span></li>';
+}
+
+/* ---------------- 10. ROUTER ---------------- */
+const Router = {
+  current: null,
+  go(hash){
+    let rawHash = hash || window.location.hash || "#/";
+    
+    // Smooth scroll support for landing page sections
+    if (rawHash.startsWith("#landing-") || ["#/features", "#/species", "#/roles", "#/workflow"].includes(rawHash)) {
+      const targetId = rawHash.startsWith("#landing-") ? rawHash.slice(1) : "landing-" + rawHash.replace(/^#\/?/, "");
+      const targetEl = document.getElementById(targetId);
+      if (!Auth.isAuthenticated()) {
+        document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-landing"));
+        const shell = document.getElementById("appShell");
+        if (shell) shell.classList.remove("show");
+        if (targetEl) targetEl.scrollIntoView({ behavior: "smooth" });
+        Router.current = "landing";
+        return;
+      }
+    }
+
+    let route = (rawHash || "#/").replace(/^#\/?/, "") || "landing";
+    if (route === "" || route === "/") route = "landing";
+    const authed = Auth.isAuthenticated();
+
+    if (authed) {
+      if (route === "landing" || route === "login") route = "dashboard";
+      // Enforce Role-Based Access Control on internal routes
+      if (!Auth.canAccessRoute(route)) {
+        App.toast("error", "Access Denied", "Your user role (" + (Auth.getUser()?.label || "Officer") + ") does not have permission to view " + route.toUpperCase() + ".");
+        route = "dashboard";
+      }
+    } else {
+      if (route !== "landing" && route !== "login") route = "login";
+    }
+
+    if (!document.getElementById("view-" + route)) {
+      route = authed ? "404" : "landing";
+    }
+
+    document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + route));
+    const shell = document.getElementById("appShell");
+    const inApp = ["landing", "login"].indexOf(route) === -1;
+    if (shell) shell.classList.toggle("show", inApp);
+    document.querySelectorAll("#sideNav a[data-route]").forEach(a => a.classList.toggle("active", a.dataset.route === route));
+
+    // Close mobile sidebar on route transition
+    const side = document.getElementById("sidebar"), back = document.getElementById("backdrop");
+    if (side && side.classList.contains("open")) {
+      side.classList.remove("open");
+      if (back) back.classList.remove("show");
+    }
+
+    if (inApp && authed) {
+      const u = Auth.getUser();
+      if (u) {
+        const userLbl = document.getElementById("userLabel");
+        if (userLbl) userLbl.textContent = u.label || u.username;
+      }
+      ensureModule(route);
+      if (route === "dashboard") Dashboard.init();
+      if (route === "analytics") Analytics.init();
+      if (route === "reports") initReportsPage();
+      if (route === "notifications") initNotifications();
+    }
+    const targetHash = "#/" + route;
+    if (window.location.hash !== targetHash && !(route === "landing" && (window.location.hash === "#/" || !window.location.hash))) {
+      window.location.hash = targetHash;
+    }
+    window.scrollTo(0, 0);
+    Router.current = route;
+  }
+};
+
+/* ---------------- 11. SETTINGS + INIT ---------------- */
+function bindSettings(){
+  const org = document.getElementById("orgForm");
+  if (org) org.addEventListener("submit", e => {
+    e.preventDefault();
+    App.toast("success", "Settings saved", "Organization information has been updated successfully.");
+  });
+  const pwd = document.getElementById("pwdForm");
+  if (pwd) pwd.addEventListener("submit", e => {
+    e.preventDefault();
+    const f = new FormData(pwd);
+    if (f.get("new_password") !== f.get("confirm_password")) {
+      App.toast("error", "Password mismatch", "The new password and confirmation do not match.");
+      return;
+    }
+    App.toast("success", "Password updated", "Your account password has been changed.");
+    pwd.reset();
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  App.init();
+  Auth.init();
+  bindSettings();
+  
+  const btnSync = document.getElementById("btnSync");
+  if (btnSync) btnSync.addEventListener("click", () => Router.go("#/" + (Router.current || "dashboard")));
+  
+  const btnLogout = document.getElementById("btnLogout");
+  if (btnLogout) btnLogout.addEventListener("click", () => Auth.logout());
+  
+  document.querySelectorAll(".brand").forEach(b => {
+    b.addEventListener("click", () => {
+      if (Auth.isAuthenticated()) Router.go("#/dashboard");
+      else Router.go("#/");
+    });
+  });
+
+  if (Auth.isAuthenticated()) {
+    const u = Auth.getUser();
+    if (u) {
+      const userLbl = document.getElementById("userLabel");
+      if (userLbl) userLbl.textContent = u.label || u.username;
+    }
+  }
+
+  // 1-Click Demo Persona launchers from landing page
+  document.querySelectorAll(".js-launch-role").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const u = btn.dataset.user || "admin@example.com";
+      const res = await Auth.login(u, "ChangeMe123!");
+      if (res.ok) {
+        Auth.startTimeoutMonitor();
+        const userLbl = document.getElementById("userLabel");
+        if (userLbl) userLbl.textContent = res.user.label || res.user.username;
+        Router.go("#/dashboard");
+      }
+    });
+  });
+
+  // Hash change router listener
+  window.addEventListener("hashchange", () => Router.go(window.location.hash));
+
+  // Initial route
+  Router.go(window.location.hash);
+});
+
+window.CRLMIS = { Api, App, Auth, Dashboard, CrudPage, MODULES, DEMO_SET, Router };
+})();
+</script>
+</body>
+</html>
